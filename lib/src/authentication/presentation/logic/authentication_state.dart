@@ -104,6 +104,14 @@ class UpdateUserError extends AuthenticationState {
   List<Object?> get props => [message, errors];
 }
 
+class LoggingUserOut extends AuthenticationState {
+  const LoggingUserOut();
+}
+
+class UserLoggedOut extends AuthenticationState {
+  const UserLoggedOut();
+}
+
 // general state
 class AuthenticationError extends AuthenticationState {
   final String message;

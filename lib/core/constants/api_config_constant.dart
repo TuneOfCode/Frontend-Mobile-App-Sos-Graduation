@@ -1,15 +1,19 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:flutter/foundation.dart';
-
 class ApiConfig {
   const ApiConfig._();
-  static const HOST = kIsWeb
-      ? 'localhost'
-      : '10.0.2.2'; // web: localhost, emulator android: 10.0.2.2
-  static const PORT = "5032"; // https: 7162, http: 5032
+  static const HOST = '192.168.1.8'; // 192.168.1.7
+  // kIsWeb
+  //     ? 'localhost'
+  //     : '192.168.1.7'; // web: localhost, emulator android: 10.0.2.2
+  static const PORT = "6868"; // https: 7162, http: 5032
   static const BASE_URL = "http://$HOST:$PORT/api";
+  static const BASE_SOCKET_URL = "http://$HOST:$PORT";
   static const BASE_IMAGE_URL = "http://$HOST:$PORT";
+
+  // // use ngrok host
+  // static const BASE_URL = "https://correct-pegasus-rich.ngrok-free.app/api";
+  // static const BASE_IMAGE_URL = "https://correct-pegasus-rich.ngrok-free.app";
 }
 
 class AuthenticationEndpoint {
@@ -23,4 +27,21 @@ class AuthenticationEndpoint {
 class UserEndpoint {
   const UserEndpoint._();
   static const ROOT = "/users";
+}
+
+class FriendshipRequestEndpoint {
+  const FriendshipRequestEndpoint._();
+  static const ROOT = "/friendship-requests";
+  static const GET_SENT = "sent";
+  static const GET_RECEIVED = "received";
+  static const ACCEPT = "accept";
+  static const REJECT = "reject";
+  static const CANCEL = "cancel";
+}
+
+class FriendshipEndpoint {
+  const FriendshipEndpoint._();
+  static const ROOT = "/friendships";
+  static const GET_RECOMMEND = "recommend";
+  static const REMOVE = "remove";
 }

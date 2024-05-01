@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sos_app/core/components/widgets/button_base.dart';
@@ -9,6 +11,7 @@ import 'package:sos_app/src/authentication/domain/params/login_user.params.dart'
 import 'package:sos_app/src/authentication/presentation/logic/authentication_bloc.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_event.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_state.dart';
+import 'package:sos_app/src/authentication/presentation/widgets/loading_column.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, required this.controller});
@@ -60,6 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocConsumer<AuthenticationBloc, AuthenticationState>(
       listener: (context, state) => _handleListen(context, state),
       builder: (context, state) {
+        if (state is LoggingUser) {
+          return const LoadingColumn(message: 'Đang đăng nhập');
+        }
+
         return Scaffold(
           backgroundColor: Colors.white,
           resizeToAvoidBottomInset: false,

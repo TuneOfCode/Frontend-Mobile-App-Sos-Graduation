@@ -164,6 +164,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       body: SingleChildScrollView(
         child: BlocConsumer<AuthenticationBloc, AuthenticationState>(
           listener: (context, state) => _handleListen(context, state),
+          // buildWhen: (previous, current) =>
+          //     previous != current && current is ProfileLoaded,
           builder: (context, state) {
             if (state is GettingProfile) {
               return const LoadingColumn(message: 'Đang tải thông tin cá nhân');

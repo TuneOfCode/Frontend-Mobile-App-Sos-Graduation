@@ -15,7 +15,7 @@ class ApiResponseFailure extends Failure {
   dynamic get data {
     logger.e('[API RESPONSE FAILURE] errors: $errData');
     List<ErrorModel> errors = List<dynamic>.from(errData.data['errors'])
-        .map((item) => ErrorModel.fromMap(item))
+        .map((item) => ErrorModel.fromJson(item))
         .toList();
     return errors;
   }

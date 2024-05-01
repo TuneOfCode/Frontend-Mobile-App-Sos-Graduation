@@ -5,8 +5,8 @@ import 'package:sos_app/core/constants/app_config_constant.dart';
 import 'package:sos_app/core/constants/logger_constant.dart';
 import 'package:sos_app/core/exceptions/api_response_exception.dart';
 import 'package:sos_app/core/services/http_client_service.dart';
-import 'package:sos_app/src/authentication/data/datasources/authentication_local_storage.dart';
-import 'package:sos_app/src/authentication/data/datasources/authentication_remote_datasource.dart';
+import 'package:sos_app/src/authentication/data/datasources/local/authentication_local_datasource.dart';
+import 'package:sos_app/src/authentication/data/datasources/remote/authentication_remote_datasource.dart';
 import 'package:sos_app/src/authentication/data/models/user_model.dart';
 import 'package:sos_app/src/authentication/domain/entities/auth.dart';
 import 'package:sos_app/src/authentication/domain/params/create_user_params.dart';
@@ -16,11 +16,11 @@ import 'package:universal_io/io.dart';
 
 class AuthenticationRemoteDataSourceImpl
     implements AuthenticationRemoteDataSource {
-  final AuthenticationLocalStorage _authenticationLocalStorage;
+  final AuthenticationLocalDataSource _authenticationLocalDataSource;
   final HttpClientService _httpClient;
 
   AuthenticationRemoteDataSourceImpl(
-    this._authenticationLocalStorage,
+    this._authenticationLocalDataSource,
     this._httpClient,
   );
 
@@ -43,8 +43,9 @@ class AuthenticationRemoteDataSourceImpl
     try {
       final response = await _httpClient.getAsync(UserEndpoint.ROOT);
       final data = List<dynamic>.from(response['data'])
-          .map((item) => UserModel.fromMap(item))
+          .map((item) => UserModel.fromJson(item))
           .toList();
+
       return data;
     } on DioException catch (e) {
       throw ApiResponseException(
@@ -60,10 +61,12 @@ class AuthenticationRemoteDataSourceImpl
       final response = await _httpClient.postAsync(
           AuthenticationEndpoint.LOGIN, UserModel.toLoginUser(params));
       final data = Auth.fromMap(response);
-      await _authenticationLocalStorage.setAccessToken(value: data.accessToken);
-      await _authenticationLocalStorage.setRefreshToken(
-        value: data.refreshToken,
+      await _authenticationLocalDataSource.setAccessToken(data.accessToken);
+      await _authenticationLocalDataSource.setRefreshToken(
+        data.refreshToken,
       );
+      await getProfile();
+
       return data;
     } on DioException catch (e) {
       throw ApiResponseException(
@@ -77,7 +80,9 @@ class AuthenticationRemoteDataSourceImpl
   Future<UserModel> getProfile() async {
     try {
       final response = await _httpClient.getAsync(AuthenticationEndpoint.ME);
-      final data = UserModel.fromMap(response);
+      final data = UserModel.fromJson(response);
+      _authenticationLocalDataSource.setCurrentUser(userModelToJson(data));
+
       return data;
     } on DioException catch (e) {
       throw ApiResponseException(
@@ -126,6 +131,8 @@ class AuthenticationRemoteDataSourceImpl
           },
         ),
       );
+
+      await getProfile();
     } on DioException catch (e) {
       throw ApiResponseException(
         exceptionMessage: AppConfig.BAD_REQUEST_ERROR_MSG,

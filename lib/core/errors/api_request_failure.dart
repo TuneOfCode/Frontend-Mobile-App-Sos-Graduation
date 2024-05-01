@@ -37,7 +37,7 @@ class ApiRequestFailure extends Failure {
   @override
   get data {
     List<ErrorModel> errors = List<dynamic>.from(response.data['errors'])
-        .map((item) => ErrorModel.fromMap(item))
+        .map((item) => ErrorModel.fromJson(item))
         .toList();
     // logger.e('[API REQUEST FAILURE] errors: $errors');
     return errors;

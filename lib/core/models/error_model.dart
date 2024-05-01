@@ -9,7 +9,7 @@ class ErrorModel {
     required this.message,
   });
 
-  factory ErrorModel.fromMap(DataMap json) {
+  factory ErrorModel.fromJson(DataMap json) {
     return ErrorModel(
       code: json['code'].toString(),
       message: json['message'].toString(),

@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:sos_app/core/constants/logger_constant.dart';
+import 'package:sos_app/core/services/injection_container_service.dart';
+import 'package:sos_app/core/sockets/socket.dart';
+import 'package:sos_app/core/sockets/webrtc.dart';
+import 'package:sos_app/src/authentication/data/datasources/local/authentication_local_datasource.dart';
 import 'package:sos_app/src/authentication/domain/params/create_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/login_user.params.dart';
 import 'package:sos_app/src/authentication/domain/params/update_user_params.dart';
@@ -19,7 +23,8 @@ class AuthenticationBloc
   final GetUsers _getUsers;
   final LoginUser _loginUser;
   final GetProfile _getProfile;
-  final UpdateUser __updateUser;
+  final UpdateUser _updateUser;
+  final AuthenticationLocalDataSource _authenticationLocalDataSource;
 
   AuthenticationBloc({
     required CreateUser createUser,
@@ -31,13 +36,15 @@ class AuthenticationBloc
         _getUsers = getUsers,
         _loginUser = loginUser,
         _getProfile = getProfile,
-        __updateUser = updateUser,
+        _updateUser = updateUser,
+        _authenticationLocalDataSource = sl(),
         super(const AuthenticationInitial()) {
     on<CreateUserEvent>(_createUserHandler);
     on<GetUsersEvent>(_getUsersHandler);
     on<LoginUserEvent>(_loginUserHandler);
     on<GetProfileEvent>(_getProfileHandler);
     on<UpdateUserEvent>(_updateUserHandler);
+    on<LogoutUserEvent>(_logoutUserHandler);
   }
 
   Future<void> _createUserHandler(
@@ -109,7 +116,7 @@ class AuthenticationBloc
       UpdateUserEvent event, Emitter<AuthenticationState> emit) async {
     emit(const UpdatingUser());
 
-    final result = await __updateUser.call(
+    final result = await _updateUser.call(
       UpdateUserParams(
         userId: event.params.userId,
         firstName: event.params.firstName,
@@ -126,5 +133,16 @@ class AuthenticationBloc
       },
       (_) => emit(const UserUpdated()),
     );
+  }
+
+  FutureOr<void> _logoutUserHandler(
+      LogoutUserEvent event, Emitter<AuthenticationState> emit) async {
+    emit(const LoggingUserOut());
+    final accessToken =
+        await sl<AuthenticationLocalDataSource>().getAccessToken();
+    await Socket.logout(accessToken);
+    await WebRTCsHub.instance.hubConnection!.invoke('Disconnect');
+    await _authenticationLocalDataSource.clearCache();
+    emit(const UserLoggedOut());
   }
 }

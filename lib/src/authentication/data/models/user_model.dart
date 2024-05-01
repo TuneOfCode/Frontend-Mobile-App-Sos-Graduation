@@ -19,21 +19,42 @@ class UserModel extends User {
     required super.createdAt,
   });
 
-  factory UserModel.fromJson(String source) =>
-      UserModel.fromMap(jsonDecode(source) as DataMap);
+  factory UserModel.fromJson(DataMap json) => UserModel(
+        userId: json['userId'].toString(),
+        fullName: json['fullName'].toString(),
+        firstName: json['firstName'].toString(),
+        lastName: json['lastName'].toString(),
+        email: json['email'].toString(),
+        contactPhone: json['contactPhoneNumber'].toString(),
+        avatarUrl: json['avatar'].toString(),
+        verifiedAt: json['verifiedOnUtc'].toString(),
+        createdAt: json['createdOnUtc'].toString(),
+      );
 
-  UserModel.fromMap(DataMap data)
-      : this(
-          userId: data['userId'].toString(),
-          fullName: data['fullName'].toString(),
-          firstName: data['firstName'].toString(),
-          lastName: data['lastName'].toString(),
-          email: data['email'].toString(),
-          contactPhone: data['contactPhoneNumber'].toString(),
-          avatarUrl: data['avatar'].toString(),
-          verifiedAt: data['verifiedOnUtc'].toString(),
-          createdAt: data['createdOnUtc'].toString(),
-        );
+  DataMap toJson() => {
+        'userId': userId,
+        'fullName': fullName,
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'contactPhoneNumber': contactPhone,
+        'avatar': avatarUrl,
+        'verifiedOnUtc': verifiedAt,
+        'createdOnUtc': createdAt,
+      };
+  static Future<UserModel> empty() {
+    return Future.value(const UserModel(
+      userId: '',
+      fullName: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      contactPhone: '',
+      avatarUrl: '',
+      verifiedAt: '',
+      createdAt: '',
+    ));
+  }
 
   static DataMap toCreateUser(CreateUserParams params) => {
         'firstName': params.firstName,
@@ -71,17 +92,19 @@ class UserModel extends User {
         'password': params.password,
       };
 
-  DataMap toMap() => {
-        'userId': userId,
-        'fullName': fullName,
-        'firstName': firstName,
-        'lastName': lastName,
-        'email': email,
-        'contactPhoneNumber': contactPhone,
-        'avatar': avatarUrl,
-        'verifiedOnUtc': verifiedAt,
-        'createdOnUtc': createdAt,
-      };
-
-  String toJson() => jsonEncode(toMap());
+  // DataMap toMap() => {
+  //       'userId': userId,
+  //       'fullName': fullName,
+  //       'firstName': firstName,
+  //       'lastName': lastName,
+  //       'email': email,
+  //       'contactPhoneNumber': contactPhone,
+  //       'avatar': avatarUrl,
+  //       'verifiedOnUtc': verifiedAt,
+  //       'createdOnUtc': createdAt,
+  //     };
 }
+
+UserModel userModelFromJson(String str) => UserModel.fromJson(json.decode(str));
+
+String userModelToJson(UserModel data) => jsonEncode(data.toJson());

@@ -52,23 +52,29 @@ class _MapWidgetState extends State<MapWidget> {
               width: 60,
               height: 60,
               alignment: Alignment.center,
-              child: CustomMarkerWidget(
-                imageUrl:
-                    'https://lh3.googleusercontent.com/ogw/AF2bZygo9L-AquHOa_WA1fkxJyGh_hw7bNa91I35AJ6X=s32-c-mo',
-                title: 'Trần Thanh Tú',
-                colorPin: Colors.blue[600],
+              child: InkWell(
+                onTap: () {},
+                child: CustomMarkerWidget(
+                  imageUrl:
+                      'https://lh3.googleusercontent.com/ogw/AF2bZygo9L-AquHOa_WA1fkxJyGh_hw7bNa91I35AJ6X=s32-c-mo',
+                  title: 'Trần Thanh Tú',
+                  colorPin: Colors.blue[600],
+                ),
               ),
             ),
-            const Marker(
-              point: LatLng(16.5778849, 107.515872),
+            Marker(
+              point: const LatLng(16.5778849, 107.515872),
               width: 60,
               height: 60,
               alignment: Alignment.center,
-              child: CustomMarkerWidget(
-                imageUrl:
-                    'https://lh3.googleusercontent.com/a-/ALV-UjV8__iFZZeLsW-9THiul9hVIySCXlwaJp9l2VQZquXg3gY=s40-p',
-                title: 'Hoàng Thị Ngọc Yến',
-                colorPin: Colors.pinkAccent,
+              child: InkWell(
+                onTap: () {},
+                child: const CustomMarkerWidget(
+                  imageUrl:
+                      'https://lh3.googleusercontent.com/a-/ALV-UjV8__iFZZeLsW-9THiul9hVIySCXlwaJp9l2VQZquXg3gY=s40-p',
+                  title: 'Hoàng Thị Ngọc Yến',
+                  colorPin: Colors.pinkAccent,
+                ),
               ),
             ),
           ],

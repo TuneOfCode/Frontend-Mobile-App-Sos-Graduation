@@ -4,8 +4,13 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sos_app/core/router/app_router.dart';
-import 'package:sos_app/src/authentication/presentation/logic/authentication_bloc.dart';
-import 'package:sos_app/src/authentication/presentation/logic/authentication_event.dart';
+import 'package:sos_app/core/services/injection_container_service.dart';
+import 'package:sos_app/core/sockets/socket.dart';
+import 'package:sos_app/core/sockets/webrtc.dart';
+import 'package:sos_app/src/authentication/data/datasources/local/authentication_local_datasource.dart';
+import 'package:sos_app/src/friendship/domain/params/get_friendship_params.dart';
+import 'package:sos_app/src/friendship/presentation/logic/friendship_bloc.dart';
+import 'package:sos_app/src/friendship/presentation/logic/friendship_event.dart';
 import 'package:sos_app/widgets/icon_button_widget.dart';
 import 'package:sos_app/widgets/map_widget.dart';
 import 'package:sos_app/widgets/sos_phone_widget.dart';
@@ -23,8 +28,19 @@ class _HomePageState extends State<HomePage> {
   late bool servicePermission = false;
   late LocationPermission permission;
 
+  Future<void> getSocket() async {
+    final accessToken =
+        await sl<AuthenticationLocalDataSource>().getAccessToken();
+
+    if (accessToken != null) {
+      await Socket.initNotification(accessToken);
+      await WebRTCsHub.instance.init(accessToken);
+    }
+  }
+
   @override
   void initState() {
+    getSocket();
     super.initState();
   }
 
@@ -54,7 +70,7 @@ class _HomePageState extends State<HomePage> {
         // return null;
       }
 
-      return await Geolocator.getCurrentPosition();
+      // return await Geolocator.getCurrentPosition();
     } catch (e) {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   SnackBar(
@@ -62,7 +78,12 @@ class _HomePageState extends State<HomePage> {
       //   ),
       // );
     }
-    return null;
+
+    // List<Location> locations =
+    //     await locationFromAddress("Phu Loc, Thua Thien Hue");
+    // logger.d('locations: $locations');
+
+    return await Geolocator.getCurrentPosition();
   }
 
   @override
@@ -79,8 +100,9 @@ class _HomePageState extends State<HomePage> {
             left: 5,
             child: InkWell(
               onTap: () {
-                context.read<AuthenticationBloc>().add(const GetProfileEvent());
-                Navigator.of(context).pushNamed(AppRouter.updateProfile);
+                context.read<FriendshipBloc>().add(const GetFriendshipsEvent(
+                    params: GetFriendshipParams(userId: '', page: 1)));
+                Navigator.of(context).pushNamed(AppRouter.profile);
               },
               child: Container(
                 margin: const EdgeInsets.all(2),
@@ -187,66 +209,78 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  margin: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(
-                      width: 3.0,
-                      color: Colors.transparent,
-                    ),
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(
-                        20,
+                InkWell(
+                  onTap: () {},
+                  child: Container(
+                    margin: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                        width: 3.0,
+                        color: Colors.transparent,
                       ),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 5,
-                        blurRadius: 7,
-                        offset:
-                            const Offset(0, 3), // changes position of shadow
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(
+                          20,
+                        ),
                       ),
-                    ],
-                  ),
-                  height: 60,
-                  width: 60,
-                  child: const Icon(
-                    Icons.notifications,
-                    size: 40,
-                    color: Colors.black,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset:
+                              const Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    height: 60,
+                    width: 60,
+                    child: const Icon(
+                      Icons.notifications,
+                      size: 40,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
-                Container(
-                  margin: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(
-                      width: 3.0,
-                      color: Colors.transparent,
-                    ),
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(
-                        20,
+                InkWell(
+                  onTap: () {
+                    context.read<FriendshipBloc>().add(
+                        const GetFriendshipRecommendsEvent(
+                            params: GetFriendshipParams(userId: '', page: 1)));
+                    Navigator.of(context)
+                        .pushNamed(AppRouter.contacts, arguments: 0);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                        width: 3.0,
+                        color: Colors.transparent,
                       ),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 5,
-                        blurRadius: 7,
-                        offset:
-                            const Offset(0, 3), // changes position of shadow
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(
+                          20,
+                        ),
                       ),
-                    ],
-                  ),
-                  height: 60,
-                  width: 60,
-                  child: const Icon(
-                    Icons.contacts,
-                    size: 40,
-                    color: Colors.black,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset:
+                              const Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    height: 60,
+                    width: 60,
+                    child: const Icon(
+                      Icons.contacts,
+                      size: 40,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
               ],

@@ -50,3 +50,10 @@ class UpdateUserEvent extends AuthenticationEvent {
   @override
   List<Object> get props => [params];
 }
+
+class LogoutUserEvent extends AuthenticationEvent {
+  const LogoutUserEvent();
+
+  @override
+  List<Object> get props => [];
+}

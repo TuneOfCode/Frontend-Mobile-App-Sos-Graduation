@@ -4,9 +4,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sos_app/core/components/widgets/toast_error.dart';
 import 'package:sos_app/core/constants/logger_constant.dart';
+import 'package:sos_app/core/router/app_router.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_bloc.dart';
+import 'package:sos_app/src/authentication/presentation/logic/authentication_event.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_state.dart';
+import 'package:sos_app/src/authentication/presentation/widgets/loading_column.dart';
+import 'package:sos_app/src/friendship/presentation/logic/friendship_bloc.dart';
+import 'package:sos_app/src/friendship/presentation/logic/friendship_state.dart';
+import 'package:sos_app/src/friendship/presentation/widgets/get_friendship_listview.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -55,11 +62,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
-        child: BlocConsumer<AuthenticationBloc, AuthenticationState>(
-          listener: (context, state) {},
+        child: BlocConsumer<FriendshipBloc, FriendshipState>(
+          listener: (context, state) {
+            if (state is FriendshipError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                ToastError(message: state.message).build(context),
+              );
+            }
+          },
           builder: (context, state) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,7 +142,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           right: 5,
                         ),
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context
+                                .read<AuthenticationBloc>()
+                                .add(const GetProfileEvent());
+                            Navigator.of(context)
+                                .pushNamed(AppRouter.updateProfile);
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 const Color.fromRGBO(117, 116, 116, 0.251),
@@ -151,32 +169,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 8,
-                          right: 5,
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromRGBO(117, 116, 116, 0.251),
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(8),
+                      BlocConsumer<AuthenticationBloc, AuthenticationState>(
+                        listener: (context, state) {},
+                        builder: (context, state) {
+                          if (state is LoggingUserOut) {
+                            return const LoadingColumn(
+                                message: 'Đang đăng xuất');
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              left: 8,
+                              right: 5,
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                context
+                                    .read<AuthenticationBloc>()
+                                    .add(const LogoutUserEvent());
+                                Navigator.of(context)
+                                    .pushNamed(AppRouter.authentication);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color.fromRGBO(117, 116, 116, 0.251),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(8),
+                                  ),
+                                ),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: const Text(
+                                'Đăng xuất',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
                               ),
                             ),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: const Text(
-                            'Đăng xuất',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -184,6 +217,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Container(
                   margin: const EdgeInsets.only(
                     top: 20,
+                    left: 20,
                   ),
                   child: const Text(
                     'Danh sách bạn bè của tôi',
@@ -203,27 +237,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       left: 20,
                       right: 20,
                     ),
-                    // child: ListView.builder(
-                    //   padding: const EdgeInsets.only(top: 20),
-                    //   physics: const NeverScrollableScrollPhysics(),
-                    //   shrinkWrap: true,
-                    //   itemCount: state.authUser.playlists!
-                    //       .length, // Playlist.playlists.length
-                    //   itemBuilder: (context, index) {
-                    //     return PlaylistCardWidget(
-                    //         playlist: state.authUser.playlists![index]);
-                    //   },
-                    // ),
-                    child: const Center(
-                      child: Text(
-                        'Danh sách bạn bè trống',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
+                    child: (state is GettingFriendships
+                        ? const LoadingColumn(
+                            message: 'Đang tải dữ liệu bạn bè')
+                        : state is FriendshipsLoaded
+                            ? Center(
+                                child: GetFriendshipListView(
+                                    friendships: state.friendships),
+                              )
+                            : const SizedBox.shrink()),
                   ),
                 ),
               ],
