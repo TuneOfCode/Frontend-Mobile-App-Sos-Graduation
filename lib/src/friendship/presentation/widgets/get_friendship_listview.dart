@@ -82,17 +82,17 @@ class _GetFriendshipListViewState extends State<GetFriendshipListView> {
   @override
   Widget build(BuildContext context) {
     if (hasIncomingCall) {
-      return Dialog(
-        backgroundColor: Colors.transparent,
-        insetAnimationCurve: Curves.bounceIn,
-        child: SafeArea(
-          child: IncomingCall(
-            callInfoModel: callInfoModel,
-            acceptCall: _acceptCall,
-            denyCall: _denyCall,
-          ),
-        ),
-      );
+      Future.delayed(Duration.zero, () {
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return IncomingCall(
+                callInfoModel: callInfoModel,
+                acceptCall: _acceptCall,
+                denyCall: _denyCall,
+              );
+            });
+      });
     }
 
     if (widget.friendships.isEmpty) {
@@ -156,6 +156,7 @@ class _GetFriendshipListViewState extends State<GetFriendshipListView> {
     setState(() {
       hasIncomingCall = false;
     });
+    Navigator.of(context).pop();
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => CallScreen(callInfoModel: callInfoModel)));
   }
@@ -167,6 +168,7 @@ class _GetFriendshipListViewState extends State<GetFriendshipListView> {
     setState(() {
       hasIncomingCall = false;
     });
+    Navigator.of(context).pop();
   }
 
   void _setInfo(CallInfoModel info) {
