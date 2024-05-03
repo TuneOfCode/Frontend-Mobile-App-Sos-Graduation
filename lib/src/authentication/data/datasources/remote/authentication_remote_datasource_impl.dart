@@ -5,13 +5,17 @@ import 'package:sos_app/core/constants/app_config_constant.dart';
 import 'package:sos_app/core/constants/logger_constant.dart';
 import 'package:sos_app/core/exceptions/api_response_exception.dart';
 import 'package:sos_app/core/services/http_client_service.dart';
+import 'package:sos_app/core/sockets/webrtc.dart';
 import 'package:sos_app/src/authentication/data/datasources/local/authentication_local_datasource.dart';
 import 'package:sos_app/src/authentication/data/datasources/remote/authentication_remote_datasource.dart';
 import 'package:sos_app/src/authentication/data/models/user_model.dart';
+import 'package:sos_app/src/authentication/data/models/verify_code_model.dart';
 import 'package:sos_app/src/authentication/domain/entities/auth.dart';
 import 'package:sos_app/src/authentication/domain/params/create_user_params.dart';
-import 'package:sos_app/src/authentication/domain/params/login_user.params.dart';
+import 'package:sos_app/src/authentication/domain/params/login_user_params.dart';
+import 'package:sos_app/src/authentication/domain/params/resend_verify_code_params.dart';
 import 'package:sos_app/src/authentication/domain/params/update_user_params.dart';
+import 'package:sos_app/src/authentication/domain/params/verify_user_params.dart';
 import 'package:universal_io/io.dart';
 
 class AuthenticationRemoteDataSourceImpl
@@ -65,6 +69,8 @@ class AuthenticationRemoteDataSourceImpl
       await _authenticationLocalDataSource.setRefreshToken(
         data.refreshToken,
       );
+      final accessToken = await _authenticationLocalDataSource.getAccessToken();
+      await WebRTCsHub.instance.init(accessToken!);
       await getProfile();
 
       return data;
@@ -136,6 +142,36 @@ class AuthenticationRemoteDataSourceImpl
     } on DioException catch (e) {
       throw ApiResponseException(
         exceptionMessage: AppConfig.BAD_REQUEST_ERROR_MSG,
+        data: e.response,
+      );
+    }
+  }
+
+  @override
+  Future<void> resendVerifyCode(ResendVerifyCodeParams params) async {
+    try {
+      await _httpClient.patchAsync(
+        AuthenticationEndpoint.RESEND,
+        VerifyCodeModel.toResendVerifyCode(params),
+      );
+    } on DioException catch (e) {
+      throw ApiResponseException(
+        exceptionMessage: AppConfig.GENERAL_ERROR_MSG,
+        data: e.response,
+      );
+    }
+  }
+
+  @override
+  Future<void> verifyUser(VerifyUserParams params) async {
+    try {
+      await _httpClient.patchAsync(
+        AuthenticationEndpoint.VERIFY,
+        VerifyCodeModel.toVerifyUser(params),
+      );
+    } on DioException catch (e) {
+      throw ApiResponseException(
+        exceptionMessage: AppConfig.GENERAL_ERROR_MSG,
         data: e.response,
       );
     }

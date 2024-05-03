@@ -20,6 +20,8 @@ class AuthenticationEndpoint {
   const AuthenticationEndpoint._();
   static const ROOT = "/authentication";
   static const LOGIN = "$ROOT/login";
+  static const VERIFY = "$ROOT/verify";
+  static const RESEND = "$ROOT/resend-verify-code";
   static const REGISTER = "$ROOT/register";
   static const ME = "$ROOT/me";
 }

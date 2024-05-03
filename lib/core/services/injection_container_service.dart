@@ -18,8 +18,12 @@ import 'package:sos_app/src/authentication/domain/usecases/create_user.dart';
 import 'package:sos_app/src/authentication/domain/usecases/get_profile.dart';
 import 'package:sos_app/src/authentication/domain/usecases/get_users.dart';
 import 'package:sos_app/src/authentication/domain/usecases/login_user.dart';
+import 'package:sos_app/src/authentication/domain/usecases/resend_verify_code.dart';
 import 'package:sos_app/src/authentication/domain/usecases/update_user.dart';
+import 'package:sos_app/src/authentication/domain/usecases/verify_user.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_bloc.dart';
+import 'package:sos_app/src/friendship/data/datasources/local/friendship_local_datasource.dart';
+import 'package:sos_app/src/friendship/data/datasources/local/friendship_local_datasource_impl.dart';
 import 'package:sos_app/src/friendship/data/datasources/remote/friendship_remote_datasource.dart';
 import 'package:sos_app/src/friendship/data/datasources/remote/friendship_remote_datasource_impl.dart';
 import 'package:sos_app/src/friendship/data/datasources/remote/friendship_request_remote_datasource.dart';
@@ -56,6 +60,8 @@ Future<void> dependencyInjection() async {
           createUser: sl(),
           getUsers: sl(),
           loginUser: sl(),
+          verifyUser: sl(),
+          resendVerifyCode: sl(),
           getProfile: sl(),
           updateUser: sl(),
         ))
@@ -64,6 +70,8 @@ Future<void> dependencyInjection() async {
     ..registerLazySingleton(() => CreateUser(sl()))
     ..registerLazySingleton(() => GetUsers(sl()))
     ..registerLazySingleton(() => LoginUser(sl()))
+    ..registerLazySingleton(() => VerifyUser(sl()))
+    ..registerLazySingleton(() => ResendVerifyCode(sl()))
     ..registerLazySingleton(() => GetProfile(sl()))
     ..registerLazySingleton(() => UpdateUser(sl()))
 
@@ -128,11 +136,13 @@ Future<void> dependencyInjection() async {
 
     // Repositories
     ..registerLazySingleton<FriendshipRepository>(
-        () => FriendshipRepositoryImpl(sl()))
+        () => FriendshipRepositoryImpl(sl(), sl(), sl()))
 
     // Data sources
     ..registerLazySingleton<FriendshipRemoteDataSource>(
-        () => FriendshipRemoteDataSourceImpl(sl(), sl()))
+        () => FriendshipRemoteDataSourceImpl(sl(), sl(), sl()))
+    ..registerLazySingleton<FriendshipLocalDataSource>(
+        () => FriendshipLocalDataSourceImpl())
 
     ///***********************************************///
 

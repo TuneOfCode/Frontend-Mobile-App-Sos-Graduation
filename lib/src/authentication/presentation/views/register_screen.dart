@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:sos_app/core/components/widgets/button_base.dart';
 import 'package:sos_app/core/components/widgets/text_field_base.dart';
 import 'package:sos_app/core/components/widgets/toast_error.dart';
@@ -8,7 +9,7 @@ import 'package:sos_app/src/authentication/domain/params/create_user_params.dart
 import 'package:sos_app/src/authentication/presentation/logic/authentication_bloc.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_event.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_state.dart';
-import 'package:sos_app/src/authentication/presentation/views/login_screen.dart';
+import 'package:sos_app/src/authentication/presentation/widgets/loading_column.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key, required this.controller});
@@ -18,6 +19,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final box = GetStorage();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -54,10 +56,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     if (state is UserCreated) {
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) =>
-            LoginScreen(controller: widget.controller),
-      ));
+      box.write('email', emailController.text.trim());
+      widget.controller.animateToPage(
+        2,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.ease,
+      );
     }
   }
 
@@ -77,8 +81,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthenticationBloc, AuthenticationState>(
-      listener: (context, state) => _handleListen(context, state),
+      listener: _handleListen,
       builder: (context, state) {
+        if (state is CreatingUser) {
+          return const LoadingColumn(
+            message: 'Đang xử lý',
+          );
+        }
+
         return Scaffold(
           backgroundColor: Colors.white,
           resizeToAvoidBottomInset: false,
@@ -157,6 +167,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             height: 5,
                           ),
                           TextFieldBase(
+                            isTypePassword: true,
                             controller: passwordController,
                             labelText: 'Mật khẩu',
                             errorText: errorParams.password,
@@ -165,6 +176,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             height: 5,
                           ),
                           TextFieldBase(
+                            isTypePassword: true,
                             controller: confirmPasswordController,
                             labelText: 'Nhập lại mật khẩu',
                             errorText: errorParams.confirmPassword,
@@ -175,9 +187,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Center(
                             child: ButtonBase(
                               text: 'Đăng ký',
-                              onPressed: () {
-                                _handleRegister(context);
-                              },
+                              onPressed: () => _handleRegister(context),
                             ),
                           ),
                           const SizedBox(

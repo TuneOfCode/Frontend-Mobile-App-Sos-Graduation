@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:sos_app/core/constants/api_config_constant.dart';
 import 'package:sos_app/core/constants/app_config_constant.dart';
@@ -6,17 +8,21 @@ import 'package:sos_app/core/exceptions/api_response_exception.dart';
 import 'package:sos_app/core/services/http_client_service.dart';
 import 'package:sos_app/src/authentication/data/datasources/local/authentication_local_datasource.dart';
 import 'package:sos_app/src/authentication/data/models/user_model.dart';
+import 'package:sos_app/src/friendship/data/datasources/local/friendship_local_datasource.dart';
 import 'package:sos_app/src/friendship/data/datasources/remote/friendship_remote_datasource.dart';
 import 'package:sos_app/src/friendship/data/models/friendship_model.dart';
+import 'package:sos_app/src/friendship/domain/entities/friendship.dart';
 import 'package:sos_app/src/friendship/domain/params/get_friendship_params.dart';
 import 'package:sos_app/src/friendship/domain/params/remove_friendship_params.dart';
 
 class FriendshipRemoteDataSourceImpl implements FriendshipRemoteDataSource {
   final AuthenticationLocalDataSource _authenticationLocalDataSource;
+  final FriendshipLocalDataSource _friendshipLocalDataSource;
   final HttpClientService _httpClient;
 
   FriendshipRemoteDataSourceImpl(
     this._authenticationLocalDataSource,
+    this._friendshipLocalDataSource,
     this._httpClient,
   );
 
@@ -35,6 +41,12 @@ class FriendshipRemoteDataSourceImpl implements FriendshipRemoteDataSource {
       final data = List<dynamic>.from(response['data'])
           .map((item) => FriendshipModel.fromJson(item))
           .toList();
+
+      final friendships = List<Friendship>.from(
+        data.map((x) => FriendshipModel.fromJson(x.toJson())),
+      );
+
+      await _friendshipLocalDataSource.setFriendships(jsonEncode(friendships));
 
       return data;
     } on DioException catch (e) {

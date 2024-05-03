@@ -31,6 +31,19 @@ class FriendshipModel extends Friendship {
           updatedAt: json['updatedAt'].toString(),
         );
 
+  DataMap toJson() => {
+        'userId': userId,
+        'fullName': fullName,
+        'email': email,
+        'avatar': avatar,
+        'friendId': friendId,
+        'friendFullName': friendFullName,
+        'friendEmail': friendEmail,
+        'friendAvatar': friendAvatar,
+        'createdAt': createdAt,
+        'updatedAt': updatedAt,
+      };
+
   static DataMap toQueryParams(GetFriendshipParams params) {
     if (!params.page!.isNaN) {
       return {

@@ -70,6 +70,40 @@ class LoggingUserError extends AuthenticationState {
   List<Object?> get props => [message, errors];
 }
 
+// verify user state
+class VerifingUser extends AuthenticationState {
+  const VerifingUser();
+}
+
+class UserVerified extends AuthenticationState {
+  const UserVerified();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class VerifyUserError extends AuthenticationState {
+  final String message;
+  final dynamic errors;
+
+  const VerifyUserError(this.message, this.errors);
+
+  @override
+  List<Object?> get props => [message, errors];
+}
+
+// resend verify code state
+class ResendingVerifyCode extends AuthenticationState {
+  const ResendingVerifyCode();
+}
+
+class VerifyCodeResent extends AuthenticationState {
+  const VerifyCodeResent();
+
+  @override
+  List<Object?> get props => [];
+}
+
 // get profile state
 
 class GettingProfile extends AuthenticationState {

@@ -2,25 +2,27 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:sos_app/core/components/widgets/button_base.dart';
 import 'package:sos_app/core/components/widgets/text_field_base.dart';
 import 'package:sos_app/core/components/widgets/toast_error.dart';
 import 'package:sos_app/core/constants/app_config_constant.dart';
 import 'package:sos_app/core/router/app_router.dart';
-import 'package:sos_app/src/authentication/domain/params/login_user.params.dart';
+import 'package:sos_app/src/authentication/domain/params/login_user_params.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_bloc.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_event.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_state.dart';
 import 'package:sos_app/src/authentication/presentation/widgets/loading_column.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key, required this.controller});
   final PageController controller;
+  const LoginScreen({super.key, required this.controller});
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final box = GetStorage();
   final TextEditingController emailController =
       TextEditingController(text: 'kingproup1111@gmail.com');
   final TextEditingController passwordController =
@@ -36,8 +38,29 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       });
 
+      final notVerifiedMessage =
+          AppConfig.getErrorFirst(state.errors, '_UserNotVerified');
+
       ScaffoldMessenger.of(context).showSnackBar(
-        ToastError(message: state.message).build(context),
+        ToastError(
+                message: notVerifiedMessage.isEmpty
+                    ? state.message
+                    : notVerifiedMessage)
+            .build(context),
+      );
+
+      Future.delayed(
+        const Duration(seconds: 2),
+        () {
+          if (notVerifiedMessage.isNotEmpty) {
+            box.write('email', emailController.text.trim());
+            widget.controller.animateToPage(
+              2,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.ease,
+            );
+          }
+        },
       );
     }
 
@@ -61,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthenticationBloc, AuthenticationState>(
-      listener: (context, state) => _handleListen(context, state),
+      listener: _handleListen,
       builder: (context, state) {
         if (state is LoggingUser) {
           return const LoadingColumn(message: 'Đang đăng nhập');
@@ -122,6 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 30,
                       ),
                       TextFieldBase(
+                        isTypePassword: true,
                         controller: passwordController,
                         labelText: 'Mật khẩu',
                         width: MediaQuery.of(context).size.width - 50,

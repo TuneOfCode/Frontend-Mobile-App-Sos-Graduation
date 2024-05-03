@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:sos_app/core/utils/typedef.dart';
 import 'package:sos_app/src/authentication/domain/entities/user.dart';
 import 'package:sos_app/src/authentication/domain/params/create_user_params.dart';
-import 'package:sos_app/src/authentication/domain/params/login_user.params.dart';
+import 'package:sos_app/src/authentication/domain/params/login_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/update_user_params.dart';
 
 class UserModel extends User {
@@ -42,6 +42,20 @@ class UserModel extends User {
         'verifiedOnUtc': verifiedAt,
         'createdOnUtc': createdAt,
       };
+  static UserModel constructor() {
+    return const UserModel(
+      userId: '',
+      fullName: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      contactPhone: '',
+      avatarUrl: '',
+      verifiedAt: '',
+      createdAt: '',
+    );
+  }
+
   static Future<UserModel> empty() {
     return Future.value(const UserModel(
       userId: '',

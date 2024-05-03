@@ -76,8 +76,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         );
       });
 
+      final errorAvatar = AppConfig.getErrorFirst(state.errors, 'avatar');
+
       ScaffoldMessenger.of(context).showSnackBar(
-        ToastError(message: state.message).build(context),
+        ToastError(message: errorAvatar.isEmpty ? state.message : errorAvatar)
+            .build(context),
       );
     }
 

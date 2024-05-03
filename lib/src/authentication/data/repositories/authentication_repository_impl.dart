@@ -6,8 +6,10 @@ import 'package:sos_app/src/authentication/data/datasources/remote/authenticatio
 import 'package:sos_app/src/authentication/data/models/user_model.dart';
 import 'package:sos_app/src/authentication/domain/entities/auth.dart';
 import 'package:sos_app/src/authentication/domain/params/create_user_params.dart';
-import 'package:sos_app/src/authentication/domain/params/login_user.params.dart';
+import 'package:sos_app/src/authentication/domain/params/login_user_params.dart';
+import 'package:sos_app/src/authentication/domain/params/resend_verify_code_params.dart';
 import 'package:sos_app/src/authentication/domain/params/update_user_params.dart';
+import 'package:sos_app/src/authentication/domain/params/verify_user_params.dart';
 import 'package:sos_app/src/authentication/domain/repositories/authentication_repository.dart';
 
 class AuthenticationRepositoryImpl implements AuthenticationRepository {
@@ -50,5 +52,16 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
   @override
   ResultVoid updateUser(UpdateUserParams params) {
     return apiInterceptorService(() => _remoteDataSource.updateUser(params));
+  }
+
+  @override
+  ResultFuture<void> resendVerifyCode(ResendVerifyCodeParams params) {
+    return apiInterceptorService(
+        () => _remoteDataSource.resendVerifyCode(params));
+  }
+
+  @override
+  ResultVoid verifyUser(VerifyUserParams params) {
+    return apiInterceptorService(() => _remoteDataSource.verifyUser(params));
   }
 }

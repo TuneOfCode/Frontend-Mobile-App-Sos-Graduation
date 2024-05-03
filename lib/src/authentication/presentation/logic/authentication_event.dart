@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:sos_app/src/authentication/domain/params/create_user_params.dart';
-import 'package:sos_app/src/authentication/domain/params/login_user.params.dart';
+import 'package:sos_app/src/authentication/domain/params/login_user_params.dart';
+import 'package:sos_app/src/authentication/domain/params/resend_verify_code_params.dart';
 import 'package:sos_app/src/authentication/domain/params/update_user_params.dart';
+import 'package:sos_app/src/authentication/domain/params/verify_user_params.dart';
 
 abstract class AuthenticationEvent extends Equatable {
   const AuthenticationEvent();
@@ -30,6 +32,24 @@ class LoginUserEvent extends AuthenticationEvent {
   final LoginUserParams params;
 
   const LoginUserEvent({required this.params});
+
+  @override
+  List<Object> get props => [params];
+}
+
+class VerifyUserEvent extends AuthenticationEvent {
+  final VerifyUserParams params;
+
+  const VerifyUserEvent({required this.params});
+
+  @override
+  List<Object> get props => [params];
+}
+
+class ResendVerifyCodeEvent extends AuthenticationEvent {
+  final ResendVerifyCodeParams params;
+
+  const ResendVerifyCodeEvent({required this.params});
 
   @override
   List<Object> get props => [params];

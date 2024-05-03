@@ -17,6 +17,10 @@ void main() async {
   accessToken = await sl<AuthenticationLocalDataSource>().getAccessToken();
   logger.f('accessToken: $accessToken');
 
+  // if (accessToken != null) {
+  //   WebRTCsHub.instance.init(accessToken!);
+  // }
+
   // var currentUser = await sl<AuthenticationLocalStorage>().getCurrentUser();
   // logger.f('currentUser: $currentUser');
   runApp(const SosApp());
@@ -44,7 +48,6 @@ class SosApp extends StatelessWidget {
             accessToken == null || (accessToken != null && accessToken!.isEmpty)
                 ? AppRouter.authentication
                 : AppRouter.home,
-        // AppRouter.videoCall,
         onGenerateRoute: AppRouter.onGenerateRoute,
         title: 'Sos App',
         theme: ThemeData(

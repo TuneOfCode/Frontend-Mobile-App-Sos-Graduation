@@ -56,7 +56,7 @@ class _IncomingCallState extends State<IncomingCall> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 10),
+                const SizedBox(height: 30),
                 CircleAvatar(
                   backgroundImage:
                       NetworkImage(widget.callInfoModel!.receiverAvatar!),

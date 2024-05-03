@@ -7,13 +7,17 @@ import 'package:sos_app/core/sockets/socket.dart';
 import 'package:sos_app/core/sockets/webrtc.dart';
 import 'package:sos_app/src/authentication/data/datasources/local/authentication_local_datasource.dart';
 import 'package:sos_app/src/authentication/domain/params/create_user_params.dart';
-import 'package:sos_app/src/authentication/domain/params/login_user.params.dart';
+import 'package:sos_app/src/authentication/domain/params/login_user_params.dart';
+import 'package:sos_app/src/authentication/domain/params/resend_verify_code_params.dart';
 import 'package:sos_app/src/authentication/domain/params/update_user_params.dart';
+import 'package:sos_app/src/authentication/domain/params/verify_user_params.dart';
 import 'package:sos_app/src/authentication/domain/usecases/create_user.dart';
 import 'package:sos_app/src/authentication/domain/usecases/get_profile.dart';
 import 'package:sos_app/src/authentication/domain/usecases/get_users.dart';
 import 'package:sos_app/src/authentication/domain/usecases/login_user.dart';
+import 'package:sos_app/src/authentication/domain/usecases/resend_verify_code.dart';
 import 'package:sos_app/src/authentication/domain/usecases/update_user.dart';
+import 'package:sos_app/src/authentication/domain/usecases/verify_user.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_event.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_state.dart';
 
@@ -22,6 +26,8 @@ class AuthenticationBloc
   final CreateUser _createUser;
   final GetUsers _getUsers;
   final LoginUser _loginUser;
+  final VerifyUser _verifyUser;
+  final ResendVerifyCode _resendVerifyCode;
   final GetProfile _getProfile;
   final UpdateUser _updateUser;
   final AuthenticationLocalDataSource _authenticationLocalDataSource;
@@ -30,11 +36,15 @@ class AuthenticationBloc
     required CreateUser createUser,
     required GetUsers getUsers,
     required LoginUser loginUser,
+    required VerifyUser verifyUser,
+    required ResendVerifyCode resendVerifyCode,
     required GetProfile getProfile,
     required UpdateUser updateUser,
   })  : _createUser = createUser,
         _getUsers = getUsers,
         _loginUser = loginUser,
+        _verifyUser = verifyUser,
+        _resendVerifyCode = resendVerifyCode,
         _getProfile = getProfile,
         _updateUser = updateUser,
         _authenticationLocalDataSource = sl(),
@@ -42,6 +52,8 @@ class AuthenticationBloc
     on<CreateUserEvent>(_createUserHandler);
     on<GetUsersEvent>(_getUsersHandler);
     on<LoginUserEvent>(_loginUserHandler);
+    on<VerifyUserEvent>(_verifyUserHandler);
+    on<ResendVerifyCodeEvent>(_resendVerifyCodeHandler);
     on<GetProfileEvent>(_getProfileHandler);
     on<UpdateUserEvent>(_updateUserHandler);
     on<LogoutUserEvent>(_logoutUserHandler);
@@ -97,6 +109,35 @@ class AuthenticationBloc
       (failure) =>
           emit(LoggingUserError(failure.errorMessageLog, failure.data)),
       (auth) => emit(UserLogged(auth)),
+    );
+  }
+
+  FutureOr<void> _verifyUserHandler(
+      VerifyUserEvent event, Emitter<AuthenticationState> emit) async {
+    emit(const VerifingUser());
+
+    final result = await _verifyUser.call(VerifyUserParams(
+      email: event.params.email,
+      code: event.params.code,
+    ));
+
+    result.fold(
+      (failure) => emit(VerifyUserError(failure.errorMessageLog, failure.data)),
+      (_) => emit(const UserVerified()),
+    );
+  }
+
+  FutureOr<void> _resendVerifyCodeHandler(
+      ResendVerifyCodeEvent event, Emitter<AuthenticationState> emit) async {
+    emit(const ResendingVerifyCode());
+
+    final result = await _resendVerifyCode.call(ResendVerifyCodeParams(
+      email: event.params.email,
+    ));
+
+    result.fold(
+      (failure) => emit(AuthenticationError(failure.errorMessageLog)),
+      (data) => emit(const VerifyCodeResent()),
     );
   }
 

@@ -9,9 +9,11 @@ import 'package:sos_app/src/friendship/data/models/call_info_model.dart';
 
 class CallScreen extends StatefulWidget {
   final CallInfoModel? callInfoModel;
+  final bool isCallVideo;
   const CallScreen({
     super.key,
     required this.callInfoModel,
+    this.isCallVideo = false,
   });
 
   @override
@@ -32,7 +34,7 @@ class _CallScreenState extends State<CallScreen> {
   final List<RTCIceCandidate> _iceCandidates = [];
 
   bool isAudioOn = true;
-  bool isVideoOn = false;
+  late bool isVideoOn;
   bool isFrontCameraActive = true;
 
   // bool isAcceptedReceiver = false;
@@ -40,6 +42,9 @@ class _CallScreenState extends State<CallScreen> {
   @override
   void initState() {
     super.initState();
+    setState(() {
+      isVideoOn = widget.isCallVideo;
+    });
 
     _localRTCRenderer.initialize();
     _remoteRTCRenderer.initialize();
@@ -393,7 +398,10 @@ class _CallScreenState extends State<CallScreen> {
     _localStream?.getVideoTracks().forEach((track) {
       track.enabled = isVideoOn;
     });
-    setState(() {});
+
+    if (widget.isCallVideo) {
+      setState(() {});
+    }
   }
 
   _leaveCall() {

@@ -21,16 +21,23 @@ class CallInfoModel {
 
   CallInfoModel.fromJson(DataMap json) {
     callerId = json['callerId'];
+    callerFullName = json['callerFullName'];
+    callerAvatar = json['callerAvatar'];
     receiverId = json['receiverId'];
+    receiverFullName = json['receiverFullName'];
+    receiverAvatar = json['receiverAvatar'];
     isCaller = json['isCaller'];
   }
 
   DataMap toJson() {
     final DataMap data = {};
     data['callerId'] = callerId;
+    data['callerFullName'] = callerFullName;
+    data['callerAvatar'] = callerAvatar;
     data['receiverId'] = receiverId;
+    data['receiverFullName'] = receiverFullName;
+    data['receiverAvatar'] = receiverAvatar;
     data['isCaller'] = isCaller;
-
     return data;
   }
 }

@@ -34,19 +34,22 @@ class WebRTCsHub {
 
     try {
       await hubConnection!.start();
-      logger.i('BaseSocketUrl: ${hubConnection!.baseUrl}');
+      // logger.i('BaseSocketUrl: ${hubConnection!.baseUrl}');
 
-      hubConnection!.on('UserConnected', (data) {
-        logger.i('UserConnected: $data');
+      if (hubConnection != null &&
+          hubConnection!.state == HubConnectionState.Connected) {
+        hubConnection!.on('UserConnected', (data) {
+          // logger.i('UserConnected: $data');
 
-        // callerId = dataUserConnected['UserId'];
-        // logger.i('callerId: $callerId');
-      });
+          // callerId = dataUserConnected['UserId'];
+          // logger.i('callerId: $callerId');
+        });
 
-      var dataUserConnected = await hubConnection!.invoke('Connect');
+        await hubConnection!.invoke('Connect');
 
-      logger.f('invoke data user connected: $dataUserConnected');
-      // var jsonDataUserConnected = jsonDecode(dataUserConnected.toString());
+        // logger.f('invoke data user connected: $dataUserConnected');
+        // var jsonDataUserConnected = jsonDecode(dataUserConnected.toString());
+      }
     } catch (e) {
       logger.e('Error: ${e.toString()}');
       await hubConnection!.stop();

@@ -6,4 +6,5 @@ class LocalDataSource {
   static const ACCESS_TOKEN = "access_token";
   static const REFRESH_TOKEN = "login_refresh_token";
   static const CURRENT_USER = "current_user";
+  static const FRIENDSHIPS = "friendships";
 }
