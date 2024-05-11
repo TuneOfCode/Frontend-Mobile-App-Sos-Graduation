@@ -19,14 +19,14 @@ class CustomMarkerWidget extends StatelessWidget {
       children: <Widget>[
         Image.asset(
           'assets/images/marker.png',
-          width: 60,
-          height: 60,
+          width: 45,
+          height: 45,
           color: colorPin,
         ),
         Positioned(
-          top: 7.5,
+          top: 12,
           child: CircleAvatar(
-            radius: 16,
+            radius: 12,
             backgroundImage: NetworkImage(
               imageUrl,
             ),

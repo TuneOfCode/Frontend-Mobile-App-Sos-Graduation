@@ -1,4 +1,6 @@
 // ignore: uri_does_not_exist
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:core';
 import 'package:sos_app/core/constants/logger_constant.dart';
 import 'package:universal_html/html.dart' as html;
@@ -127,7 +129,6 @@ class _GetUserMediaSampleWebState extends State<GetUserMediaSampleWeb> {
         .getVideoTracks()
         .firstWhere((track) => track.kind == 'video');
     final frame = await videoTrack.captureFrame();
-    // ignore: use_build_context_synchronously
     await showDialog(
         context: context,
         builder: (context) => AlertDialog(

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:sos_app/pages/home_page.dart';
+import 'package:sos_app/core/router/app_router.dart';
 
 class SosCountdownTimeWidget extends StatefulWidget {
   const SosCountdownTimeWidget({super.key});
@@ -13,7 +13,7 @@ class SosCountdownTimeWidget extends StatefulWidget {
 class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
   static int maxSeconds = 10;
   late int seconds;
-  static int maxSos = 1;
+  static int maxSos = 0;
   late int sosCounter;
   static int blockTime = 5;
   Timer? timer;
@@ -36,6 +36,9 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
         });
       } else {
         timer.cancel();
+        Future.delayed(const Duration(seconds: 3), () {
+          Navigator.of(context).pop();
+        });
       }
     });
   }
@@ -122,11 +125,14 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
     }
 
     if (isExist) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => const HomePage(),
-        ),
-      );
+      // Navigator.of(context).push(
+      //   MaterialPageRoute(
+      //     builder: (context) => const HomePage(),
+      //   ),
+      // );
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(AppRouter.home, (route) => false);
+      timer!.cancel();
       return;
     }
   }
@@ -194,7 +200,7 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
                   vertical: 20,
                 ),
                 child: Text(
-                  'Cảnh báo SOS của bạn sẽ được gửi đến bạn bè của bạn sau ${seconds < 10 ? '0$seconds' : '$seconds'} giây',
+                  'Cảnh báo SOS sẽ được gửi đến bạn bè của bạn sau ${seconds < 10 ? '0$seconds' : '$seconds'} giây',
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.red[600],
@@ -204,41 +210,46 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
                 ),
               ),
             ),
-            Container(
-              margin: const EdgeInsets.symmetric(
-                vertical: 20,
-              ),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: seconds > 0 ? Colors.red : Colors.green[600],
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
+            if (seconds > 0) ...[
+              Container(
+                margin: const EdgeInsets.symmetric(
+                  vertical: 20,
                 ),
-                child: Text(
-                  seconds > 0
-                      ? 'Huỷ bỏ'
-                      : 'Phát lại tín hiệu cầu cứu ($sosCounter)',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        seconds > 0 ? Colors.red : Colors.green[600],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
                   ),
+                  child: const Text(
+                    'Huỷ bỏ',
+                    // : 'Phát lại tín hiệu cầu cứu ($sosCounter)',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                    ),
+                  ),
+                  onPressed: () {
+                    checkUnblockSpam();
+                    checkSpam();
+                    stopTimer(
+                      isExist: seconds > 0,
+                    );
+                    // stopTimer(
+                    //   isReset: seconds == 0,
+                    //   isExist: seconds > 0 && unblockSpam != null,
+                    // );
+                    // stopTimer(
+                    //   isReset: false,
+                    //   isExist: true,
+                    // );
+                  },
                 ),
-                onPressed: () {
-                  checkUnblockSpam();
-                  checkSpam();
-                  stopTimer(
-                    isReset: seconds == 0,
-                    isExist: seconds > 0 && unblockSpam != null,
-                  );
-                  // stopTimer(
-                  //   isReset: false,
-                  //   isExist: true,
-                  // );
-                },
               ),
-            ),
+            ],
           ],
         ),
       ),

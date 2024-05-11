@@ -5,9 +5,11 @@ import 'package:sos_app/src/authentication/data/datasources/local/authentication
 import 'package:sos_app/src/authentication/data/datasources/remote/authentication_remote_datasource.dart';
 import 'package:sos_app/src/authentication/data/models/user_model.dart';
 import 'package:sos_app/src/authentication/domain/entities/auth.dart';
+import 'package:sos_app/src/authentication/domain/params/change_password_params.dart';
 import 'package:sos_app/src/authentication/domain/params/create_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/login_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/resend_verify_code_params.dart';
+import 'package:sos_app/src/authentication/domain/params/update_location_params.dart';
 import 'package:sos_app/src/authentication/domain/params/update_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/verify_user_params.dart';
 import 'package:sos_app/src/authentication/domain/repositories/authentication_repository.dart';
@@ -63,5 +65,17 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
   @override
   ResultVoid verifyUser(VerifyUserParams params) {
     return apiInterceptorService(() => _remoteDataSource.verifyUser(params));
+  }
+
+  @override
+  ResultVoid changePassword(ChangePasswordParams params) {
+    return apiInterceptorService(
+        () => _remoteDataSource.changePassword(params));
+  }
+
+  @override
+  ResultVoid updateLocation(UpdateLocationParams params) {
+    return apiInterceptorService(
+        () => _remoteDataSource.updateLocation(params));
   }
 }

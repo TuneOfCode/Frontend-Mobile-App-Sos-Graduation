@@ -138,6 +138,45 @@ class UpdateUserError extends AuthenticationState {
   List<Object?> get props => [message, errors];
 }
 
+// change password state
+class ChangingPassword extends AuthenticationState {
+  const ChangingPassword();
+}
+
+class PasswordChanged extends AuthenticationState {
+  const PasswordChanged();
+}
+
+class ChangePasswordError extends AuthenticationState {
+  final String message;
+  final dynamic errors;
+
+  const ChangePasswordError(this.message, this.errors);
+
+  @override
+  List<Object?> get props => [message, errors];
+}
+
+// update location state
+class UpdatingLocation extends AuthenticationState {
+  const UpdatingLocation();
+}
+
+class LocationUpdated extends AuthenticationState {
+  const LocationUpdated();
+}
+
+class UpdateLocationError extends AuthenticationState {
+  final String message;
+  final dynamic errors;
+
+  const UpdateLocationError(this.message, this.errors);
+
+  @override
+  List<Object?> get props => [message, errors];
+}
+
+// logout user state
 class LoggingUserOut extends AuthenticationState {
   const LoggingUserOut();
 }

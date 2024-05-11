@@ -25,4 +25,9 @@ class FriendshipLocalDataSourceImpl implements FriendshipLocalDataSource {
   Future<void> setFriendships(String value) async {
     await box.write(LocalDataSource.FRIENDSHIPS, value);
   }
+
+  @override
+  Future<void> clearFriendships() async {
+    await box.remove(LocalDataSource.FRIENDSHIPS);
+  }
 }

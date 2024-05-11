@@ -14,11 +14,13 @@ import 'package:sos_app/src/authentication/data/datasources/remote/authenticatio
 import 'package:sos_app/src/authentication/data/datasources/remote/authentication_remote_datasource_impl.dart';
 import 'package:sos_app/src/authentication/data/repositories/authentication_repository_impl.dart';
 import 'package:sos_app/src/authentication/domain/repositories/authentication_repository.dart';
+import 'package:sos_app/src/authentication/domain/usecases/change_password.dart';
 import 'package:sos_app/src/authentication/domain/usecases/create_user.dart';
 import 'package:sos_app/src/authentication/domain/usecases/get_profile.dart';
 import 'package:sos_app/src/authentication/domain/usecases/get_users.dart';
 import 'package:sos_app/src/authentication/domain/usecases/login_user.dart';
 import 'package:sos_app/src/authentication/domain/usecases/resend_verify_code.dart';
+import 'package:sos_app/src/authentication/domain/usecases/update_location.dart';
 import 'package:sos_app/src/authentication/domain/usecases/update_user.dart';
 import 'package:sos_app/src/authentication/domain/usecases/verify_user.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_bloc.dart';
@@ -64,6 +66,8 @@ Future<void> dependencyInjection() async {
           resendVerifyCode: sl(),
           getProfile: sl(),
           updateUser: sl(),
+          changePassword: sl(),
+          updateLocation: sl(),
         ))
 
     // Use cases
@@ -74,7 +78,8 @@ Future<void> dependencyInjection() async {
     ..registerLazySingleton(() => ResendVerifyCode(sl()))
     ..registerLazySingleton(() => GetProfile(sl()))
     ..registerLazySingleton(() => UpdateUser(sl()))
-
+    ..registerLazySingleton(() => ChangePassword(sl()))
+    ..registerLazySingleton(() => UpdateLocation(sl()))
     // Repositories
     ..registerLazySingleton<AuthenticationRepository>(
         () => AuthenticationRepositoryImpl(sl(), sl(), sl()))

@@ -7,4 +7,6 @@ class LocalDataSource {
   static const REFRESH_TOKEN = "login_refresh_token";
   static const CURRENT_USER = "current_user";
   static const FRIENDSHIPS = "friendships";
+  static const CURRENT_LATITUDE = "current_latitude";
+  static const CURRENT_LONGITUDE = "current_longitude";
 }

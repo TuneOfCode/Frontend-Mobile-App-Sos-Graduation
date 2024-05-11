@@ -1,25 +1,29 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:sos_app/core/constants/logger_constant.dart';
 import 'package:sos_app/core/services/injection_container_service.dart';
 import 'package:sos_app/core/sockets/socket.dart';
 import 'package:sos_app/core/sockets/webrtc.dart';
 import 'package:sos_app/src/authentication/data/datasources/local/authentication_local_datasource.dart';
+import 'package:sos_app/src/authentication/domain/params/change_password_params.dart';
 import 'package:sos_app/src/authentication/domain/params/create_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/login_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/resend_verify_code_params.dart';
+import 'package:sos_app/src/authentication/domain/params/update_location_params.dart';
 import 'package:sos_app/src/authentication/domain/params/update_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/verify_user_params.dart';
+import 'package:sos_app/src/authentication/domain/usecases/change_password.dart';
 import 'package:sos_app/src/authentication/domain/usecases/create_user.dart';
 import 'package:sos_app/src/authentication/domain/usecases/get_profile.dart';
 import 'package:sos_app/src/authentication/domain/usecases/get_users.dart';
 import 'package:sos_app/src/authentication/domain/usecases/login_user.dart';
 import 'package:sos_app/src/authentication/domain/usecases/resend_verify_code.dart';
+import 'package:sos_app/src/authentication/domain/usecases/update_location.dart';
 import 'package:sos_app/src/authentication/domain/usecases/update_user.dart';
 import 'package:sos_app/src/authentication/domain/usecases/verify_user.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_event.dart';
 import 'package:sos_app/src/authentication/presentation/logic/authentication_state.dart';
+import 'package:sos_app/src/friendship/data/datasources/local/friendship_local_datasource.dart';
 
 class AuthenticationBloc
     extends Bloc<AuthenticationEvent, AuthenticationState> {
@@ -30,7 +34,8 @@ class AuthenticationBloc
   final ResendVerifyCode _resendVerifyCode;
   final GetProfile _getProfile;
   final UpdateUser _updateUser;
-  final AuthenticationLocalDataSource _authenticationLocalDataSource;
+  final ChangePassword _changePassword;
+  final UpdateLocation _updateLocation;
 
   AuthenticationBloc({
     required CreateUser createUser,
@@ -40,6 +45,8 @@ class AuthenticationBloc
     required ResendVerifyCode resendVerifyCode,
     required GetProfile getProfile,
     required UpdateUser updateUser,
+    required ChangePassword changePassword,
+    required UpdateLocation updateLocation,
   })  : _createUser = createUser,
         _getUsers = getUsers,
         _loginUser = loginUser,
@@ -47,7 +54,8 @@ class AuthenticationBloc
         _resendVerifyCode = resendVerifyCode,
         _getProfile = getProfile,
         _updateUser = updateUser,
-        _authenticationLocalDataSource = sl(),
+        _changePassword = changePassword,
+        _updateLocation = updateLocation,
         super(const AuthenticationInitial()) {
     on<CreateUserEvent>(_createUserHandler);
     on<GetUsersEvent>(_getUsersHandler);
@@ -56,6 +64,8 @@ class AuthenticationBloc
     on<ResendVerifyCodeEvent>(_resendVerifyCodeHandler);
     on<GetProfileEvent>(_getProfileHandler);
     on<UpdateUserEvent>(_updateUserHandler);
+    on<ChangePasswordEvent>(_changePasswordHandler);
+    on<UpdateLocationEvent>(_updateLocationHandler);
     on<LogoutUserEvent>(_logoutUserHandler);
   }
 
@@ -168,22 +178,57 @@ class AuthenticationBloc
     );
 
     result.fold(
-      (failure) {
-        logger.e('[UPDATE USER] Failure Data: ${failure.data}');
-        emit(UpdateUserError(failure.errorMessageLog, failure.data));
-      },
+      (failure) => emit(UpdateUserError(failure.errorMessageLog, failure.data)),
       (_) => emit(const UserUpdated()),
+    );
+  }
+
+  FutureOr<void> _changePasswordHandler(
+      ChangePasswordEvent event, Emitter<AuthenticationState> emit) async {
+    emit(const ChangingPassword());
+
+    final result = await _changePassword.call(
+      ChangePasswordParams(
+        userId: event.params.userId,
+        currentPassword: event.params.currentPassword,
+        password: event.params.password,
+        confirmPassword: event.params.confirmPassword,
+      ),
+    );
+
+    result.fold(
+      (failure) =>
+          emit(ChangePasswordError(failure.errorMessageLog, failure.data)),
+      (_) => emit(const PasswordChanged()),
+    );
+  }
+
+  FutureOr<void> _updateLocationHandler(
+      UpdateLocationEvent event, Emitter<AuthenticationState> emit) async {
+    emit(const UpdatingLocation());
+
+    final result = await _updateLocation.call(
+      UpdateLocationParams(
+        userId: event.params.userId,
+        longitude: event.params.longitude,
+        latitude: event.params.latitude,
+      ),
+    );
+
+    result.fold(
+      (failure) =>
+          emit(UpdateLocationError(failure.errorMessageLog, failure.data)),
+      (_) => emit(const LocationUpdated()),
     );
   }
 
   FutureOr<void> _logoutUserHandler(
       LogoutUserEvent event, Emitter<AuthenticationState> emit) async {
     emit(const LoggingUserOut());
-    final accessToken =
-        await sl<AuthenticationLocalDataSource>().getAccessToken();
-    await Socket.logout(accessToken);
+    await Socket.instance.logout();
     await WebRTCsHub.instance.hubConnection!.invoke('Disconnect');
-    await _authenticationLocalDataSource.clearCache();
+    await sl<AuthenticationLocalDataSource>().clearCache();
+    await sl<FriendshipLocalDataSource>().clearFriendships();
     emit(const UserLoggedOut());
   }
 }

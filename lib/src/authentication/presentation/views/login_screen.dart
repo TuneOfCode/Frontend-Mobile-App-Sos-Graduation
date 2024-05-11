@@ -161,26 +161,26 @@ class _LoginScreenState extends State<LoginScreen> {
                           }
                         },
                       ),
-                      const SizedBox(
-                        height: 2,
-                      ),
-                      InkWell(
-                        onTap: () {
-                          widget.controller.animateToPage(
-                            2,
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.ease,
-                          );
-                        },
-                        child: const Text(
-                          'Quên mật khẩu?',
-                          style: TextStyle(
-                            color: Color(0xFF755DC1),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
+                      // const SizedBox(
+                      //   height: 2,
+                      // ),
+                      // InkWell(
+                      //   onTap: () {
+                      //     widget.controller.animateToPage(
+                      //       2,
+                      //       duration: const Duration(milliseconds: 500),
+                      //       curve: Curves.ease,
+                      //     );
+                      //   },
+                      //   child: const Text(
+                      //     'Quên mật khẩu?',
+                      //     style: TextStyle(
+                      //       color: Color(0xFF755DC1),
+                      //       fontSize: 13,
+                      //       fontWeight: FontWeight.w500,
+                      //     ),
+                      //   ),
+                      // ),
                       const SizedBox(
                         height: 15,
                       ),

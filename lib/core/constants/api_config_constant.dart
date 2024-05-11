@@ -2,7 +2,7 @@
 
 class ApiConfig {
   const ApiConfig._();
-  static const HOST = '192.168.1.8'; // 192.168.1.7
+  static const HOST = '192.168.1.7'; // 192.168.1.7
   // kIsWeb
   //     ? 'localhost'
   //     : '192.168.1.7'; // web: localhost, emulator android: 10.0.2.2
@@ -29,6 +29,8 @@ class AuthenticationEndpoint {
 class UserEndpoint {
   const UserEndpoint._();
   static const ROOT = "/users";
+  static const CHANGE_PASSWORD = "change-password";
+  static const UPDATE_LOCATION = "update-location";
 }
 
 class FriendshipRequestEndpoint {

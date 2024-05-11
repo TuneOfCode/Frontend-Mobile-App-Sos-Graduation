@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sos_app/core/components/views/alert_dialog.dart';
@@ -12,7 +13,6 @@ import 'package:sos_app/src/authentication/presentation/logic/authentication_sta
 import 'package:sos_app/src/friendship/domain/params/get_friendship_params.dart';
 import 'package:sos_app/src/friendship/presentation/logic/friendship_bloc.dart';
 import 'package:sos_app/src/friendship/presentation/logic/friendship_event.dart';
-import 'package:sos_app/src/friendship/presentation/widgets/notify_call.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
@@ -25,7 +25,7 @@ class _SettingScreenState extends State<SettingScreen> {
   UserModel currentUser = UserModel.constructor();
 
   Future<void> getCurrentUser() async {
-    await Future.delayed(const Duration(milliseconds: 500), () async {
+    await Future.delayed(Duration.zero, () async {
       final user = await sl<AuthenticationLocalDataSource>().getCurrentUser();
       setState(() {
         currentUser = user;
@@ -145,171 +145,170 @@ class _SettingScreenState extends State<SettingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return NotifyCall(
-      child: BlocConsumer<AuthenticationBloc, AuthenticationState>(
-        listener: (context, state) {},
-        builder: (context, state) {
-          // if (state is LoggingUserOut) {
-          //   return const LoadingColumn(message: 'Đang đăng xuất');
-          // }
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Cài đặt',
-                  style: TextStyle(
+    return BlocConsumer<AuthenticationBloc, AuthenticationState>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Cài đặt',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                )),
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.black,
+          ),
+          body: Container(
+            padding: const EdgeInsets.all(20),
+            child: ListView(
+              children: [
+                ListTile(
+                  onTap: () => _handleInfoCurrentUser(context),
+                  leading: CircleAvatar(
+                    radius: 30,
+                    backgroundImage: Image.network(
+                      CachedNetworkImage(
+                        imageUrl:
+                            '${ApiConfig.BASE_IMAGE_URL}${currentUser.avatarUrl}',
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                      ).imageUrl,
+                      width: 100,
+                      fit: BoxFit.cover,
+                    ).image,
+                  ),
+                  title: Text(
+                    currentUser.fullName,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    currentUser.contactPhone,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                const Divider(),
+                const SizedBox(
+                  height: 20,
+                ),
+                ListTile(
+                  onTap: () => _handleChangePassword(context),
+                  leading: Icon(
+                    Icons.shield,
+                    size: 25,
+                    color: Colors.yellow[800],
+                  ),
+                  title: const Text(
+                    'Thay đổi mật khẩu',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                ),
+                const Divider(),
+                const SizedBox(
+                  height: 10,
+                ),
+                ListTile(
+                  onTap: () => _handleContact(context),
+                  leading: const Icon(
+                    Icons.group_add,
+                    size: 25,
                     color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  )),
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              foregroundColor: Colors.black,
+                  ),
+                  title: const Text(
+                    'Liên hệ',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                ),
+                const Divider(),
+                const SizedBox(
+                  height: 10,
+                ),
+                ListTile(
+                  onTap: () => _handleInfoApp(context),
+                  leading: Icon(
+                    Icons.info,
+                    size: 25,
+                    color: Colors.blue[800],
+                  ),
+                  title: const Text(
+                    'Thông tin ứng dụng',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const Divider(),
+                const SizedBox(
+                  height: 10,
+                ),
+                ListTile(
+                  onTap: () => _handlePolicy(context),
+                  leading: Icon(
+                    Icons.menu_book,
+                    size: 25,
+                    color: Colors.pink[800],
+                  ),
+                  title: const Text(
+                    'Điều khoản và chính sách',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const Divider(),
+                const SizedBox(
+                  height: 10,
+                ),
+                ListTile(
+                  onTap: () => _handleBugReport(context),
+                  leading: Icon(
+                    Icons.bug_report,
+                    size: 25,
+                    color: Colors.red[800],
+                  ),
+                  title: const Text(
+                    'Báo lỗi',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.red[500],
+                  ),
+                  child: ListTile(
+                    onTap: () => _handleLogout(context),
+                    title: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.logout, color: Colors.white),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          'Đăng xuất',
+                          style: TextStyle(fontSize: 20, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            body: Container(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                children: [
-                  ListTile(
-                    onTap: () => _handleInfoCurrentUser(context),
-                    leading: CircleAvatar(
-                      radius: 30,
-                      backgroundImage: Image.network(
-                        '${ApiConfig.BASE_IMAGE_URL}${currentUser.avatarUrl}',
-                        width: 100,
-                      ).image,
-                    ),
-                    title: Text(
-                      currentUser.fullName,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      currentUser.contactPhone,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  const Divider(),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  ListTile(
-                    onTap: () => _handleChangePassword(context),
-                    leading: Icon(
-                      Icons.shield,
-                      size: 25,
-                      color: Colors.yellow[800],
-                    ),
-                    title: const Text(
-                      'Thay đổi mật khẩu',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                  ),
-                  const Divider(),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  ListTile(
-                    onTap: () => _handleContact(context),
-                    leading: const Icon(
-                      Icons.group_add,
-                      size: 25,
-                      color: Colors.black,
-                    ),
-                    title: const Text(
-                      'Liên hệ',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                  ),
-                  const Divider(),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  ListTile(
-                    onTap: () => _handleInfoApp(context),
-                    leading: Icon(
-                      Icons.info,
-                      size: 25,
-                      color: Colors.blue[800],
-                    ),
-                    title: const Text(
-                      'Thông tin ứng dụng',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Divider(),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  ListTile(
-                    onTap: () => _handlePolicy(context),
-                    leading: Icon(
-                      Icons.menu_book,
-                      size: 25,
-                      color: Colors.pink[800],
-                    ),
-                    title: const Text(
-                      'Điều khoản và chính sách',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Divider(),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  ListTile(
-                    onTap: () => _handleBugReport(context),
-                    leading: Icon(
-                      Icons.bug_report,
-                      size: 25,
-                      color: Colors.red[800],
-                    ),
-                    title: const Text(
-                      'Báo lỗi',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 15,
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.red[500],
-                    ),
-                    child: ListTile(
-                      onTap: () => _handleLogout(context),
-                      title: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.logout, color: Colors.white),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Text(
-                            'Đăng xuất',
-                            style: TextStyle(fontSize: 20, color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

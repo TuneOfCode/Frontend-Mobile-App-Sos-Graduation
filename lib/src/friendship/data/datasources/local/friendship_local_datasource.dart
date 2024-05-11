@@ -4,4 +4,6 @@ abstract class FriendshipLocalDataSource {
   Future<List<Friendship>> getFriendships();
 
   Future<void> setFriendships(String value);
+
+  Future<void> clearFriendships();
 }

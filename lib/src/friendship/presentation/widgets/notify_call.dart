@@ -43,6 +43,7 @@ class _NotifyCallState extends State<NotifyCall> {
 
     if (accessToken != null) {
       await WebRTCsHub.instance.init(accessToken);
+
       final localFriendships =
           await sl<FriendshipLocalDataSource>().getFriendships();
       if (friendships.isEmpty && localFriendships.isNotEmpty) {
@@ -92,6 +93,7 @@ class _NotifyCallState extends State<NotifyCall> {
             });
             // _webRTCsHub!.off('IncommingCall');
             // _webRTCsHub!.off('CallLeft');
+            Navigator.of(context).maybePop();
           }
         });
         final currentUser =
@@ -137,7 +139,7 @@ class _NotifyCallState extends State<NotifyCall> {
     setState(() {
       hasIncomingCall = false;
     });
-    // Navigator.of(context).pop();
+    Navigator.of(context).pop();
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => CallScreen(callInfoModel: callInfoModel)));
   }
@@ -149,31 +151,35 @@ class _NotifyCallState extends State<NotifyCall> {
     setState(() {
       hasIncomingCall = false;
     });
-    // Navigator.of(context).pop();
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (hasIncomingCall) {
-      return IncomingCall(
-        callInfoModel: callInfoModel,
-        acceptCall: _acceptCall,
-        denyCall: _denyCall,
-      );
-    }
     // if (hasIncomingCall) {
-    //   Future.delayed(Duration.zero, () {
-    //     showDialog(
-    //         context: context,
-    //         builder: (BuildContext context) {
-    //           return IncomingCall(
-    //             callInfoModel: callInfoModel,
-    //             acceptCall: _acceptCall,
-    //             denyCall: _denyCall,
-    //           );
-    //         });
-    //   });
+    //   return Positioned.fill(
+    //     child: IncomingCall(
+    //       callInfoModel: callInfoModel,
+    //       acceptCall: _acceptCall,
+    //       denyCall: _denyCall,
+    //     ),
+    //   );
     // }
+    if (hasIncomingCall) {
+      Future.delayed(Duration.zero, () {
+        showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (BuildContext context) {
+            return IncomingCall(
+              callInfoModel: callInfoModel,
+              acceptCall: _acceptCall,
+              denyCall: _denyCall,
+            );
+          },
+        );
+      });
+    }
     return BlocConsumer<FriendshipBloc, FriendshipState>(
       listener: (context, state) {
         if (state is FriendshipsLoaded) {

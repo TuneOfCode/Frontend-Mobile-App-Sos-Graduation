@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:core';
 import 'dart:io';
 
@@ -176,7 +178,6 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
         .getVideoTracks()
         .firstWhere((track) => track.kind == 'video');
     final frame = await videoTrack.captureFrame();
-    // ignore: use_build_context_synchronously
     await showDialog(
         context: context,
         builder: (context) => AlertDialog(

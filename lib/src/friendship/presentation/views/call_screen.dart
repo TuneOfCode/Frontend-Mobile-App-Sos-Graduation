@@ -303,7 +303,6 @@ class _CallScreenState extends State<CallScreen> {
             left: 0,
             right: 0,
             child: Container(
-              // color: Colors.red,
               alignment: Alignment.center,
               width: double.maxFinite,
               child: Container(
@@ -316,7 +315,7 @@ class _CallScreenState extends State<CallScreen> {
                   color: Colors.white.withOpacity(.4),
                 ),
                 child: Text(
-                  widget.callInfoModel!.callerFullName!,
+                  widget.callInfoModel!.receiverFullName!,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
@@ -398,10 +397,11 @@ class _CallScreenState extends State<CallScreen> {
     _localStream?.getVideoTracks().forEach((track) {
       track.enabled = isVideoOn;
     });
+    setState(() {});
 
-    if (widget.isCallVideo) {
-      setState(() {});
-    }
+    // if (widget.isCallVideo) {
+    //   setState(() {});
+    // }
   }
 
   _leaveCall() {

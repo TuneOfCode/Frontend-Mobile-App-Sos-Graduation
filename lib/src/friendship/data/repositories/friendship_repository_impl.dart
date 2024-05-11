@@ -23,8 +23,8 @@ class FriendshipRepositoryImpl implements FriendshipRepository {
   @override
   ResultFuture<List<Friendship>> getFriendships(
       GetFriendshipParams params) async {
-    List<Friendship> friendships = await _local.getFriendships();
-    if (!await _networkInfo.isConnected || friendships.isNotEmpty) {
+    // List<Friendship> friendships = await _local.getFriendships();
+    if (!await _networkInfo.isConnected) {
       return apiInterceptorService(() => _local.getFriendships());
     }
     return apiInterceptorService(() => _remote.getFriendships(params));

@@ -10,7 +10,6 @@ import 'package:sos_app/src/friendship/presentation/logic/friendship_request_blo
 import 'package:sos_app/src/friendship/presentation/logic/friendship_request_event.dart';
 import 'package:sos_app/src/friendship/presentation/logic/friendship_request_state.dart';
 import 'package:sos_app/src/friendship/presentation/logic/friendship_state.dart';
-import 'package:sos_app/src/friendship/presentation/widgets/notify_call.dart';
 import 'package:sos_app/src/friendship/presentation/widgets/received_invitations_tab.dart';
 import 'package:sos_app/src/friendship/presentation/widgets/recommend_friends_tab.dart';
 import 'package:sos_app/src/friendship/presentation/widgets/sent_invitations_tab.dart';
@@ -69,98 +68,94 @@ class _ContactScreenState extends State<ContactScreen>
 
   @override
   Widget build(BuildContext context) {
-    return NotifyCall(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Liên hệ'),
-          bottom: TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Đề xuất kết bạn'),
-              Tab(text: 'Lời mời đã gửi'),
-              Tab(text: 'Chưa phản hồi'),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Liên hệ'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Đề xuất kết bạn'),
+            Tab(text: 'Lời mời đã gửi'),
+            Tab(text: 'Chưa phản hồi'),
+          ],
         ),
-        body: BlocConsumer<FriendshipRequestBloc, FriendshipRequestState>(
-          listener: (context, state) {
-            if (state is FriendshipRequestError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                ToastError(message: state.message).build(context),
-              );
-            }
-
-            if (state is FriendshipRequestCreated) {
-              context.read<FriendshipBloc>().add(
-                    const GetFriendshipRecommendsEvent(
-                      params: GetFriendshipParams(userId: '', page: 1),
-                    ),
-                  );
-              if (state is FriendshipRequestCancelled) {
-                context.read<FriendshipRequestBloc>().add(
-                    const GetFriendshipRequestsSentByUserEvent(
-                        params: QueryFriendshipRequestParams(userId: '')));
-              }
-
-              if (state is FriendshipRequestAccepted ||
-                  state is FriendshipRequestRejected) {
-                context.read<FriendshipRequestBloc>().add(
-                    const GetFriendshipRequestsReceivedByUserEvent(
-                        params: QueryFriendshipRequestParams(userId: '')));
-              }
-            }
-          },
-          // buildWhen: (previous, current) =>
-          //     previous != current &&
-          //         current is FriendshipRequestsSentByUserLoaded ||
-          //     current is FriendshipRequestsReceivedByUserLoaded,
-          builder: (context, state) {
-            return TabBarView(
-              controller: _tabController,
-              children: [
-                BlocConsumer<FriendshipBloc, FriendshipState>(
-                  listener: (context, state) {
-                    if (state is FriendshipError) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        ToastError(message: state.message).build(context),
-                      );
-                    }
-                  },
-                  buildWhen: (previous, current) =>
-                      previous != current &&
-                      current is FriendshipRecommendsLoaded,
-                  builder: (context, state) {
-                    if (state is GettingFriendshipRecommends) {
-                      return const LoadingColumn(message: 'Đang tải dữ liệu');
-                    }
-                    return RecommendFriendsTab(
-                      users: state is FriendshipRecommendsLoaded
-                          ? state.users
-                          : [],
-                    );
-                  },
-                ),
-                state is GettingFriendshipRequestsSentByUser
-                    ? const LoadingColumn(message: 'Đang tải dữ liệu')
-                    : SentInvitationsTab(
-                        tabController: _tabController,
-                        friendshipRequests:
-                            state is FriendshipRequestsSentByUserLoaded
-                                ? state.friendshipRequests
-                                : [],
-                      ),
-                state is GettingFriendshipRequestsReceivedByUser
-                    ? const LoadingColumn(message: 'Đang tải dữ liệu')
-                    : ReceivedInvitationsTab(
-                        friendshipRequests:
-                            state is FriendshipRequestsReceivedByUserLoaded
-                                ? state.friendshipRequests
-                                : [],
-                      ),
-              ],
+      ),
+      body: BlocConsumer<FriendshipRequestBloc, FriendshipRequestState>(
+        listener: (context, state) {
+          if (state is FriendshipRequestError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              ToastError(message: state.message).build(context),
             );
-          },
-        ),
+          }
+
+          if (state is FriendshipRequestCreated) {
+            context.read<FriendshipBloc>().add(
+                  const GetFriendshipRecommendsEvent(
+                    params: GetFriendshipParams(userId: '', page: 1),
+                  ),
+                );
+          }
+          if (state is FriendshipRequestCancelled) {
+            context.read<FriendshipRequestBloc>().add(
+                const GetFriendshipRequestsSentByUserEvent(
+                    params: QueryFriendshipRequestParams(userId: '')));
+            if (state is FriendshipRequestAccepted ||
+                state is FriendshipRequestRejected) {
+              context.read<FriendshipRequestBloc>().add(
+                  const GetFriendshipRequestsReceivedByUserEvent(
+                      params: QueryFriendshipRequestParams(userId: '')));
+            }
+          }
+        },
+        // buildWhen: (previous, current) =>
+        //     previous != current &&
+        //         current is FriendshipRequestsSentByUserLoaded ||
+        //     current is FriendshipRequestsReceivedByUserLoaded,
+        builder: (context, state) {
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              BlocConsumer<FriendshipBloc, FriendshipState>(
+                listener: (context, state) {
+                  if (state is FriendshipError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      ToastError(message: state.message).build(context),
+                    );
+                  }
+                },
+                buildWhen: (previous, current) =>
+                    previous != current &&
+                    current is FriendshipRecommendsLoaded,
+                builder: (context, state) {
+                  if (state is GettingFriendshipRecommends) {
+                    return const LoadingColumn(message: 'Đang tải dữ liệu');
+                  }
+                  return RecommendFriendsTab(
+                    users:
+                        state is FriendshipRecommendsLoaded ? state.users : [],
+                  );
+                },
+              ),
+              state is GettingFriendshipRequestsSentByUser
+                  ? const LoadingColumn(message: 'Đang tải dữ liệu')
+                  : SentInvitationsTab(
+                      tabController: _tabController,
+                      friendshipRequests:
+                          state is FriendshipRequestsSentByUserLoaded
+                              ? state.friendshipRequests
+                              : [],
+                    ),
+              state is GettingFriendshipRequestsReceivedByUser
+                  ? const LoadingColumn(message: 'Đang tải dữ liệu')
+                  : ReceivedInvitationsTab(
+                      friendshipRequests:
+                          state is FriendshipRequestsReceivedByUserLoaded
+                              ? state.friendshipRequests
+                              : [],
+                    ),
+            ],
+          );
+        },
       ),
     );
   }

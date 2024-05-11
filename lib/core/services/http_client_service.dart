@@ -32,7 +32,7 @@ class HttpClientService {
     return Options(
       headers: {
         "Authorization": "Bearer $accessToken",
-        "Content-Type": "application/json",
+        "Content-Type": "application/json; charset=utf-8",
       },
     );
   }
@@ -47,7 +47,7 @@ class HttpClientService {
         await _authenticationLocalDataSource.getAccessToken();
     final Map<String, String> defaultHeaders = {
       "Authorization": "Bearer $accessToken",
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=utf-8",
     };
     final response = await _http.get(
       path,

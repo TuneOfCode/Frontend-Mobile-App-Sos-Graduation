@@ -11,9 +11,11 @@ import 'package:sos_app/src/authentication/data/datasources/remote/authenticatio
 import 'package:sos_app/src/authentication/data/models/user_model.dart';
 import 'package:sos_app/src/authentication/data/models/verify_code_model.dart';
 import 'package:sos_app/src/authentication/domain/entities/auth.dart';
+import 'package:sos_app/src/authentication/domain/params/change_password_params.dart';
 import 'package:sos_app/src/authentication/domain/params/create_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/login_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/resend_verify_code_params.dart';
+import 'package:sos_app/src/authentication/domain/params/update_location_params.dart';
 import 'package:sos_app/src/authentication/domain/params/update_user_params.dart';
 import 'package:sos_app/src/authentication/domain/params/verify_user_params.dart';
 import 'package:universal_io/io.dart';
@@ -168,6 +170,50 @@ class AuthenticationRemoteDataSourceImpl
       await _httpClient.patchAsync(
         AuthenticationEndpoint.VERIFY,
         VerifyCodeModel.toVerifyUser(params),
+      );
+    } on DioException catch (e) {
+      throw ApiResponseException(
+        exceptionMessage: AppConfig.GENERAL_ERROR_MSG,
+        data: e.response,
+      );
+    }
+  }
+
+  @override
+  Future<void> changePassword(ChangePasswordParams params) async {
+    try {
+      String userId = params.userId;
+      if (userId.isEmpty) {
+        final user = await _authenticationLocalDataSource.getCurrentUser();
+        userId = user.userId;
+      }
+      final path =
+          '${UserEndpoint.ROOT}/$userId/${UserEndpoint.CHANGE_PASSWORD}';
+      await _httpClient.patchAsync(
+        path,
+        UserModel.toChangePassword(params),
+      );
+    } on DioException catch (e) {
+      throw ApiResponseException(
+        exceptionMessage: AppConfig.GENERAL_ERROR_MSG,
+        data: e.response,
+      );
+    }
+  }
+
+  @override
+  Future<void> updateLocation(UpdateLocationParams params) async {
+    try {
+      String userId = params.userId;
+      if (userId.isEmpty) {
+        final user = await _authenticationLocalDataSource.getCurrentUser();
+        userId = user.userId;
+      }
+      final path =
+          '${UserEndpoint.ROOT}/$userId/${UserEndpoint.UPDATE_LOCATION}';
+      await _httpClient.patchAsync(
+        path,
+        UserModel.toUpdateLocation(params),
       );
     } on DioException catch (e) {
       throw ApiResponseException(
