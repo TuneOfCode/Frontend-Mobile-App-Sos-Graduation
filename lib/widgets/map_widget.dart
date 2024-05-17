@@ -1,17 +1,21 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, unnecessary_null_comparison, depend_on_referenced_packages
 
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
+import 'package:flutter_map_cache/flutter_map_cache.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:signalr_netcore/hub_connection.dart';
 import 'package:sos_app/core/components/views/alert_dialog.dart';
 import 'package:sos_app/core/constants/api_config_constant.dart';
+import 'package:sos_app/core/constants/local_datasource_constant.dart';
 import 'package:sos_app/core/constants/logger_constant.dart';
 import 'package:sos_app/core/services/injection_container_service.dart';
 import 'package:sos_app/core/sockets/socket.dart';
@@ -40,10 +44,11 @@ class MapWidget extends StatefulWidget {
 }
 
 class _MapWidgetState extends State<MapWidget> {
-  late HubConnection? _notifyHub;
   UserModel currentUser = UserModel.constructor();
   List<Friendship> friendships = [];
   List<Marker> markers = [];
+  final box = GetStorage();
+  final _cacheStore = MemCacheStore();
 
   Future<void> getCurrentUser() async {
     await Future.delayed(Duration.zero, () async {
@@ -52,14 +57,25 @@ class _MapWidgetState extends State<MapWidget> {
         currentUser = user;
       });
       if (currentUser.userId.isNotEmpty) {
-        context.read<FriendshipBloc>().add(const GetFriendshipsEvent(
-            params: GetFriendshipParams(userId: '', page: 1)));
+        await getFriendships();
         widget.mapController.move(
             LatLng(
               currentUser.latitude,
               currentUser.longitude,
             ),
             16);
+        if (!kIsWeb) {
+          List<Placemark> placeMarks = await placemarkFromCoordinates(
+            currentUser.latitude,
+            currentUser.longitude,
+          );
+          Placemark place = placeMarks[0];
+          String currentAddress =
+              '${place.street}, ${place.subAdministrativeArea}, ${place.country}';
+          setState(() {
+            currentUser.address = currentAddress;
+          });
+        }
       }
     });
   }
@@ -68,9 +84,14 @@ class _MapWidgetState extends State<MapWidget> {
     await Future.delayed(Duration.zero, () async {
       final localFriendships =
           await sl<FriendshipLocalDataSource>().getFriendships();
-      setState(() {
-        friendships = localFriendships;
-      });
+      if (friendships.isEmpty && localFriendships.isNotEmpty) {
+        setState(() {
+          friendships = localFriendships;
+        });
+      } else {
+        context.read<FriendshipBloc>().add(const GetFriendshipsEvent(
+            params: GetFriendshipParams(userId: '', page: 1)));
+      }
     });
   }
 
@@ -79,97 +100,136 @@ class _MapWidgetState extends State<MapWidget> {
         await sl<AuthenticationLocalDataSource>().getAccessToken();
 
     if (accessToken != null) {
-      await Socket.instance.init(accessToken);
-      setState(() {
-        _notifyHub = Socket.instance.hubConnection;
-      });
-      if (_notifyHub != null) {
-        _notifyHub!.on("ReceiveNotification", (arguments) async {
-          // await GetStorage().remove(LocalDataSource.FRIENDSHIPS);
-          context.read<FriendshipBloc>().add(const GetFriendshipsEvent(
-              params: GetFriendshipParams(userId: '', page: 1)));
-        });
+      if (Socket.instance.hubConnection != null) {
+        // Socket.instance.hubConnection!.on("ReceiveNotification",
+        //     (arguments) async {
+        //   // await GetStorage().remove(LocalDataSource.FRIENDSHIPS);
+        //   context.read<FriendshipBloc>().add(const GetFriendshipsEvent(
+        //       params: GetFriendshipParams(userId: '', page: 1)));
+        // });
 
-        _notifyHub!.on("ReceiveLocation", (arguments) async {
+        Socket.instance.hubConnection!.on("ReceiveLocation", (arguments) async {
           logger.d('Receive location in map widget: $arguments');
           final data = jsonDecode(arguments![0].toString());
+          final latitude = double.parse(data['latitude'].toString());
+          final longitude = double.parse(data['longitude'].toString());
 
-          if (currentUser.userId == data['friendId']) {
-            // widget.mapController.move(
-            //     LatLng(
-            //       data['latitude'],
-            //       data['longitude'],
-            //     ),
-            //     8);
+          String currentAddress = '';
+          if (!kIsWeb) {
+            List<Placemark> placeMarks = await placemarkFromCoordinates(
+              latitude,
+              longitude,
+            );
+            Placemark place = placeMarks[0];
+            currentAddress =
+                '${place.street}, ${place.subAdministrativeArea}, ${place.country}';
+          }
+
+          if (mounted &&
+              currentUser != null &&
+              currentUser.userId == data['friendId'].toString()) {
             setState(() {
-              currentUser.latitude = data['latitude'];
-              currentUser.longitude = data['longitude'];
+              currentUser.latitude = latitude;
+              currentUser.longitude = longitude;
+              currentUser.address = currentAddress;
             });
           }
 
-          for (var friendship in friendships) {
-            if (friendship.friendId == data['friendId']) {
-              setState(() {
-                friendship.friendLatitude = data['latitude'];
-                friendship.friendLongitude = data['longitude'];
-              });
+          if (friendships != null && friendships.isNotEmpty) {
+            for (var friendship in friendships) {
+              if (friendship.friendId == data['friendId'].toString()) {
+                setState(() {
+                  friendship.friendLatitude = latitude;
+                  friendship.friendLongitude = longitude;
+                  friendship.friendshipAddress = currentAddress;
+                });
+              }
             }
           }
+
+          final isTracking = box.read(LocalDataSource.IS_TRACKING);
+          if (mounted && isTracking == null) {
+            widget.mapController.move(
+                LatLng(
+                  latitude,
+                  longitude,
+                ),
+                20);
+            box.write(LocalDataSource.IS_TRACKING, true);
+          }
         });
-      }
-    }
-  }
 
-  getMarkers() {
-    final markerMe = Marker(
-      point: widget.currentPos != null
-          ? LatLng(
-              widget.currentPos!.latitude,
-              widget.currentPos!.longitude,
-            )
-          : LatLng(
-              currentUser.latitude,
-              currentUser.longitude,
-            ),
-      width: 60,
-      height: 60,
-      alignment: Alignment.center,
-      child: InkWell(
-        onTap: () {},
-        child: CustomMarkerWidget(
-          imageUrl: '${ApiConfig.BASE_IMAGE_URL}${currentUser.avatarUrl}',
-          title: currentUser.fullName,
-          colorPin: Colors.black,
-        ),
-      ),
-    );
+        Socket.instance.hubConnection!.on("TrackLocation", (arguments) async {
+          logger.d('Track location in map widget: $arguments');
+          final data = jsonDecode(arguments![0].toString());
+          final latitude = double.parse(data['latitude'].toString());
+          final longitude = double.parse(data['longitude'].toString());
 
-    setState(() {
-      markers.add(markerMe);
-    });
+          String currentAddress = '';
+          if (!kIsWeb) {
+            List<Placemark> placeMarks = await placemarkFromCoordinates(
+              latitude,
+              longitude,
+            );
+            Placemark place = placeMarks[0];
+            currentAddress =
+                '${place.street}, ${place.subAdministrativeArea}, ${place.country}';
+          }
 
-    if (friendships.isNotEmpty) {
-      for (var friendship in friendships) {
-        final markerFriendship = Marker(
-          point: LatLng(
-            friendship.friendLatitude,
-            friendship.friendLongitude,
-          ),
-          width: 60,
-          height: 60,
-          alignment: Alignment.center,
-          child: InkWell(
-            onTap: () {},
-            child: CustomMarkerWidget(
-              imageUrl: '${ApiConfig.BASE_IMAGE_URL}${friendship.friendAvatar}',
-              title: friendship.fullName,
-              colorPin: Colors.blue[800],
-            ),
-          ),
-        );
+          if (mounted &&
+              currentUser != null &&
+              data != null &&
+              currentUser.userId == data['victimId'].toString()) {
+            setState(() {
+              currentUser.latitude = latitude;
+              currentUser.longitude = longitude;
+              currentUser.isVictim = true;
+              currentUser.address = currentAddress;
+            });
+          }
 
-        setState(() {
-          markers.add(markerFriendship);
+          if (friendships != null && friendships.isNotEmpty) {
+            for (var friendship in friendships) {
+              if (data != null &&
+                  friendship.friendId == data['victimId'].toString()) {
+                setState(() {
+                  friendship.friendLatitude = latitude;
+                  friendship.friendLongitude = longitude;
+                  friendship.isVictim = true;
+                  friendship.friendshipAddress = currentAddress;
+                });
+              }
+            }
+          }
+
+          final isTracking = box.read(LocalDataSource.IS_TRACKING);
+          if (mounted && isTracking == null) {
+            widget.mapController.move(
+                LatLng(
+                  latitude,
+                  longitude,
+                ),
+                20);
+            box.write(LocalDataSource.IS_TRACKING, true);
+          }
+        });
+
+        Socket.instance.hubConnection!.on("ReceiveSafeFromVictim", (arguments) {
+          box.remove(LocalDataSource.IS_VICTIM);
+          box.remove(LocalDataSource.DATETIME_SOS);
+          box.remove(LocalDataSource.IS_TRACKING);
+
+          final victimId = arguments![0].toString();
+          logger.d('Receive safe from victim in map widget: $victimId');
+          if (friendships != null && friendships.isNotEmpty) {
+            for (var friendship in friendships) {
+              if (victimId != null && friendship.friendId == victimId) {
+                setState(() {
+                  friendship.isVictim = false;
+                });
+              }
+            }
+          }
         });
       }
     }
@@ -179,28 +239,42 @@ class _MapWidgetState extends State<MapWidget> {
   void initState() {
     getCurrentUser();
     getNotifyHub();
-    // getFriendships();
-    getMarkers();
     super.initState();
   }
 
   @override
   void dispose() {
-    if (_notifyHub != null) {
-      _notifyHub!.off("ReceiveNotification");
-    }
+    // if (Socket.instance.hubConnection != null) {
+    //   Socket.instance.hubConnection!.off("ReceiveNotification");
+    //   Socket.instance.hubConnection!.off("ReceiveLocation");
+    //   Socket.instance.hubConnection!.off("TrackLocation");
+    // }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<FriendshipBloc, FriendshipState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is FriendshipsLoaded) {
           setState(() {
             friendships = state.friendships;
           });
-          // logger.f('friendships in map widget: $friendships');
+
+          if (!kIsWeb && friendships != null && friendships.isNotEmpty) {
+            for (var friendship in friendships) {
+              List<Placemark> placeMarks = await placemarkFromCoordinates(
+                friendship.friendLatitude,
+                friendship.friendLongitude,
+              );
+              Placemark place = placeMarks[0];
+              String currentAddress =
+                  '${place.street}, ${place.subAdministrativeArea}, ${place.country}';
+              setState(() {
+                friendship.friendshipAddress = currentAddress;
+              });
+            }
+          }
         }
       },
       builder: (context, state) => FlutterMap(
@@ -210,16 +284,17 @@ class _MapWidgetState extends State<MapWidget> {
             currentUser.latitude,
             currentUser.longitude,
           ),
-          onMapReady: () {
-            setState(() {});
-          },
         ),
         children: [
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'com.example.sos_app',
             subdomains: const ['a', 'b', 'c'],
-            tileProvider: CancellableNetworkTileProvider(),
+            // tileProvider: CancellableNetworkTileProvider(),
+            tileProvider: CachedTileProvider(
+              maxStale: const Duration(days: 30),
+              store: _cacheStore,
+            ),
           ),
           MarkerLayer(
             // markers: markers,
@@ -241,11 +316,45 @@ class _MapWidgetState extends State<MapWidget> {
                 width: 60,
                 height: 60,
                 alignment: Alignment.center,
-                child: CustomMarkerWidget(
-                  imageUrl:
-                      '${ApiConfig.BASE_IMAGE_URL}${currentUser.avatarUrl}',
-                  title: currentUser.fullName,
-                  colorPin: Colors.black,
+                child: InkWell(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialogBase(
+                          title: const Center(
+                            child: Text(
+                              'Thông tin bạn bè',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                    'Họ và tên: ${currentUser.fullName} (Bạn)'),
+                                Text('Vĩ độ: ${currentUser.latitude}'),
+                                Text('Kinh độ: ${currentUser.longitude}'),
+                                Text('Địa chỉ: ${currentUser.address}'),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  child: CustomMarkerWidget(
+                    imageUrl:
+                        '${ApiConfig.BASE_IMAGE_URL}${currentUser.avatarUrl}',
+                    title: currentUser.fullName,
+                    colorPin: Colors.black,
+                    isVictim: currentUser.isVictim,
+                  ),
                 ),
               ),
               for (final friendship in friendships) ...[
@@ -279,8 +388,11 @@ class _MapWidgetState extends State<MapWidget> {
                                 children: [
                                   Text(
                                       'Họ và tên: ${friendship.friendFullName}'),
+                                  Text('Vĩ độ: ${friendship.friendLatitude}'),
                                   Text(
-                                      'Toạ độ: (${friendship.friendLatitude}, ${friendship.friendLongitude})'),
+                                      'Kinh độ: ${friendship.friendLongitude}'),
+                                  Text(
+                                      'Địa chỉ: ${friendship.friendshipAddress}'),
                                 ],
                               ),
                             ),
@@ -293,6 +405,7 @@ class _MapWidgetState extends State<MapWidget> {
                           '${ApiConfig.BASE_IMAGE_URL}${friendship.friendAvatar}',
                       title: friendship.fullName,
                       colorPin: Colors.blue[800],
+                      isVictim: friendship.isVictim,
                     ),
                   ),
                 ),

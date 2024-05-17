@@ -15,6 +15,8 @@ class Friendship extends Equatable {
   final String friendAvatar;
   double friendLongitude;
   double friendLatitude;
+  bool isVictim;
+  String friendshipAddress;
   final String createdAt;
   final String updatedAt;
 
@@ -31,6 +33,8 @@ class Friendship extends Equatable {
     required this.friendAvatar,
     required this.friendLongitude,
     required this.friendLatitude,
+    this.isVictim = false,
+    this.friendshipAddress = '',
     required this.createdAt,
     required this.updatedAt,
   });

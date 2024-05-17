@@ -2,7 +2,7 @@
 
 class ApiConfig {
   const ApiConfig._();
-  static const HOST = '192.168.1.7'; // 192.168.1.7
+  static const HOST = '192.168.1.2';
   // kIsWeb
   //     ? 'localhost'
   //     : '192.168.1.7'; // web: localhost, emulator android: 10.0.2.2
@@ -48,4 +48,9 @@ class FriendshipEndpoint {
   static const ROOT = "/friendships";
   static const GET_RECOMMEND = "recommend";
   static const REMOVE = "remove";
+}
+
+class NotificationEndpoint {
+  const NotificationEndpoint._();
+  static const ROOT = "/notifications";
 }

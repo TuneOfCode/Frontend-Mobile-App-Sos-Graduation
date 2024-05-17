@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -34,7 +36,7 @@ class _CallScreenState extends State<CallScreen> {
   final List<RTCIceCandidate> _iceCandidates = [];
 
   bool isAudioOn = true;
-  late bool isVideoOn;
+  late bool isVideoOn = widget.isCallVideo;
   bool isFrontCameraActive = true;
 
   // bool isAcceptedReceiver = false;
@@ -42,9 +44,9 @@ class _CallScreenState extends State<CallScreen> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      isVideoOn = widget.isCallVideo;
-    });
+    // setState(() {
+    //   isVideoOn = widget.isCallVideo;
+    // });
 
     _localRTCRenderer.initialize();
     _remoteRTCRenderer.initialize();
@@ -113,6 +115,12 @@ class _CallScreenState extends State<CallScreen> {
       setState(() {});
     };
 
+    if (widget.isCallVideo) {
+      setState(() {
+        isVideoOn = true;
+      });
+    }
+
     // create our own stream
     _localStream = await navigator.mediaDevices.getUserMedia({
       'audio': isAudioOn,
@@ -127,6 +135,51 @@ class _CallScreenState extends State<CallScreen> {
     _localStream!.getTracks().forEach((track) {
       _rtcPeerConnection!.addTrack(track, _localStream!);
     });
+
+    // if (_localStream == null ||
+    //     (_localStream != null && _localStream!.getAudioTracks().isEmpty ||
+    //         _localStream!.getVideoTracks().isEmpty)) {
+    //   showDialog(
+    //     context: context,
+    //     builder: (context) {
+    //       return AlertDialogBase(
+    //         title: Row(
+    //           crossAxisAlignment: CrossAxisAlignment.center,
+    //           mainAxisAlignment: MainAxisAlignment.center,
+    //           mainAxisSize: MainAxisSize.min,
+    //           children: [
+    //             const Icon(
+    //               Icons.warning_amber_rounded,
+    //               color: Colors.redAccent,
+    //               size: 30,
+    //             ),
+    //             Text(
+    //               'Thông báo',
+    //               style: TextStyle(
+    //                 fontSize: 20,
+    //                 fontWeight: FontWeight.bold,
+    //                 color: Colors.red[600],
+    //               ),
+    //             ),
+    //           ],
+    //         ),
+    //         content: Text(
+    //           'Có vẻ như thiết bị của bạn không hỗ trợ âm thanh hoặc máy ảnh!',
+    //           style: TextStyle(
+    //             fontSize: 16,
+    //             fontWeight: FontWeight.bold,
+    //             color: Colors.red[600],
+    //           ),
+    //           textAlign: TextAlign.justify,
+    //         ),
+    //       );
+    //     },
+    //   );
+
+    //   Navigator.of(context).pop();
+
+    //   return;
+    // }
 
     // set the source for my local renderer
     _localRTCRenderer.srcObject = _localStream;
@@ -364,6 +417,18 @@ class _CallScreenState extends State<CallScreen> {
                             ? Icons.videocam_rounded
                             : Icons.videocam_off_rounded)),
 
+                    if (isVideoOn) ...[
+                      // show / unshow camera switch
+                      FloatingActionButton(
+                          onPressed: _switchCamera,
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          mini: true,
+                          heroTag: "chuyển camera sau / chuyển camera trước",
+                          child: const Icon(Icons.cameraswitch_rounded)),
+                    ],
+
                     // leave call
                     FloatingActionButton(
                       onPressed: _leaveCall,
@@ -402,6 +467,13 @@ class _CallScreenState extends State<CallScreen> {
     // if (widget.isCallVideo) {
     //   setState(() {});
     // }
+  }
+
+  _switchCamera() {
+    _localStream?.getVideoTracks().forEach((track) async {
+      await Helper.switchCamera(track, null, _localStream);
+    });
+    setState(() {});
   }
 
   _leaveCall() {

@@ -1,7 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:signalr_netcore/hub_connection.dart';
-import 'package:signalr_netcore/signalr_client.dart';
 import 'package:sos_app/core/constants/api_config_constant.dart';
 import 'package:sos_app/core/constants/logger_constant.dart';
 import 'package:sos_app/core/services/injection_container_service.dart';
@@ -31,7 +31,7 @@ class NotifyCall extends StatefulWidget {
 class _NotifyCallState extends State<NotifyCall> {
   List<Friendship> friendships = [];
 
-  late HubConnection? _webRTCsHub;
+  // late HubConnection? _webRTCsHub;
 
   bool hasIncomingCall = false;
 
@@ -42,7 +42,7 @@ class _NotifyCallState extends State<NotifyCall> {
         await sl<AuthenticationLocalDataSource>().getAccessToken();
 
     if (accessToken != null) {
-      await WebRTCsHub.instance.init(accessToken);
+      // await WebRTCsHub.instance.init(accessToken);
 
       final localFriendships =
           await sl<FriendshipLocalDataSource>().getFriendships();
@@ -50,13 +50,9 @@ class _NotifyCallState extends State<NotifyCall> {
         setState(() {
           friendships = localFriendships;
         });
-        Future.delayed(
-          Duration.zero,
-          () {
-            context.read<FriendshipBloc>().add(const GetFriendshipsEvent(
-                params: GetFriendshipParams(userId: '', page: 1)));
-          },
-        );
+      } else {
+        context.read<FriendshipBloc>().add(const GetFriendshipsEvent(
+            params: GetFriendshipParams(userId: '', page: 1)));
       }
     }
   }
@@ -66,13 +62,13 @@ class _NotifyCallState extends State<NotifyCall> {
     super.initState();
     getWebRTC();
 
-    setState(() {
-      _webRTCsHub = WebRTCsHub.instance.hubConnection;
-    });
+    // setState(() {
+    //   _webRTCsHub = WebRTCsHub.instance.hubConnection;
+    // });
 
-    if (_webRTCsHub != null) {
-      _webRTCsHub!.on('IncommingCall', (data) async {
-        _webRTCsHub!.on('CallLeft', (data) async {
+    if (WebRTCsHub.instance.hubConnection != null) {
+      WebRTCsHub.instance.hubConnection!.on('IncommingCall', (data) async {
+        WebRTCsHub.instance.hubConnection!.on('CallLeft', (data) async {
           final currentUser =
               await sl<AuthenticationLocalDataSource>().getCurrentUser();
 
@@ -91,8 +87,8 @@ class _NotifyCallState extends State<NotifyCall> {
             setState(() {
               hasIncomingCall = false;
             });
-            // _webRTCsHub!.off('IncommingCall');
-            // _webRTCsHub!.off('CallLeft');
+            // WebRTCsHub.instance.hubConnection!.off('IncommingCall');
+            // WebRTCsHub.instance.hubConnection!.off('CallLeft');
             Navigator.of(context).maybePop();
           }
         });
@@ -126,15 +122,15 @@ class _NotifyCallState extends State<NotifyCall> {
 
   @override
   void dispose() {
-    if (_webRTCsHub != null) {
-      _webRTCsHub!.off('IncommingCall');
-    }
+    // if (WebRTCsHub.instance.hubConnection != null) {
+    //   WebRTCsHub.instance.hubConnection!.off('IncommingCall');
+    // }
     super.dispose();
   }
 
   _acceptCall() {
     logger.i('===== Accepting Call =====');
-    _webRTCsHub!
+    WebRTCsHub.instance.hubConnection!
         .invoke('AcceptCall', args: [callInfoModel.receiverId.toString()]);
     setState(() {
       hasIncomingCall = false;
@@ -146,7 +142,7 @@ class _NotifyCallState extends State<NotifyCall> {
 
   _denyCall() {
     logger.i('===== Denying Call =====');
-    _webRTCsHub!
+    WebRTCsHub.instance.hubConnection!
         .invoke('DenyCall', args: [callInfoModel.receiverId.toString()]);
     setState(() {
       hasIncomingCall = false;

@@ -11,6 +11,9 @@ import 'package:sos_app/src/authentication/domain/params/update_location_params.
 import 'package:sos_app/src/authentication/domain/params/update_user_params.dart';
 
 class UserModel extends User {
+  bool isVictim;
+  String address;
+
   UserModel({
     required super.userId,
     required super.fullName,
@@ -23,6 +26,8 @@ class UserModel extends User {
     required super.latitude,
     required super.verifiedAt,
     required super.createdAt,
+    this.isVictim = false,
+    this.address = '',
   });
 
   factory UserModel.fromJson(DataMap json) => UserModel(
@@ -35,6 +40,7 @@ class UserModel extends User {
         avatarUrl: json['avatar'].toString(),
         longitude: double.parse(json['longitude'].toString()),
         latitude: double.parse(json['latitude'].toString()),
+        isVictim: false,
         verifiedAt: json['verifiedAt'].toString(),
         createdAt: json['createdAt'].toString(),
       );
@@ -63,6 +69,8 @@ class UserModel extends User {
       avatarUrl: '',
       longitude: 107.5778275,
       latitude: 16.4634687,
+      isVictim: false,
+      address: '',
       verifiedAt: '',
       createdAt: '',
     );
@@ -79,6 +87,8 @@ class UserModel extends User {
       avatarUrl: '',
       longitude: 107.5778275,
       latitude: 16.4634687,
+      isVictim: false,
+      address: '',
       verifiedAt: '',
       createdAt: '',
     ));

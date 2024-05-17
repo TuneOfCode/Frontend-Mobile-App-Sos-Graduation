@@ -1,8 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:sos_app/core/components/widgets/toast_error.dart';
 import 'package:sos_app/core/components/widgets/toast_success.dart';
 import 'package:sos_app/core/constants/api_config_constant.dart';
+import 'package:sos_app/core/constants/local_datasource_constant.dart';
 import 'package:sos_app/core/utils/datetime_util.dart';
 import 'package:sos_app/src/friendship/domain/entities/friendship_request.dart';
 import 'package:sos_app/src/friendship/domain/params/update_friendship_request_params.dart';
@@ -14,7 +18,9 @@ class ReceivedInvitationsTab extends StatelessWidget {
   const ReceivedInvitationsTab({super.key, required this.friendshipRequests});
 
   _handleAcceptFriendshipRequest(
-      BuildContext context, FriendshipRequest friendshipRequest) {
+      BuildContext context, FriendshipRequest friendshipRequest) async {
+    await GetStorage().remove(LocalDataSource.FRIENDSHIPS);
+
     context.read<FriendshipRequestBloc>().add(
           AcceptFriendshipRequestEvent(
             params: UpdateFriendshipRequestParams(
@@ -69,38 +75,56 @@ class ReceivedInvitationsTab extends StatelessWidget {
               "${ApiConfig.BASE_IMAGE_URL}${friendshipRequest.senderAvatar}";
           return ListTile(
             leading: CircleAvatar(
-              radius: 20,
+              radius: 30,
               backgroundImage: Image.network(avatarUrl).image,
             ),
-            title: Text(friendshipRequest.senderFullName),
+            title: Text(
+              friendshipRequest.senderFullName,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             subtitle: SizedBox(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => _handleAcceptFriendshipRequest(
-                        context, friendshipRequest),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+              width: MediaQuery.of(context).size.width * 0.5,
+              child: SingleChildScrollView(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => _handleAcceptFriendshipRequest(
+                          context, friendshipRequest),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        fixedSize: const Size.fromWidth(80),
+                        padding: EdgeInsets.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        'Chấp nhận',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                    child: const Text(
-                      'Chấp nhận',
-                      style: TextStyle(color: Colors.white),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () => _handleRejectFriendshipRequest(
+                          context, friendshipRequest),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        fixedSize: const Size.fromWidth(80),
+                        padding: EdgeInsets.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        'Từ chối',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () => _handleRejectFriendshipRequest(
-                        context, friendshipRequest),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                    ),
-                    child: const Text(
-                      'Từ chối',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             trailing: SizedBox(

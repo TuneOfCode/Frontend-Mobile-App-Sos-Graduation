@@ -7,6 +7,7 @@ import 'package:sos_app/src/authentication/presentation/views/setting_screen.dar
 import 'package:sos_app/src/authentication/presentation/views/update_profile_screen.dart';
 import 'package:sos_app/src/friendship/presentation/views/contact_screen.dart';
 import 'package:sos_app/src/friendship/presentation/widgets/get_user_media_sample.dart';
+import 'package:sos_app/src/notifications/presentation/views/notification_screen.dart';
 
 class AppRouter {
   // home
@@ -22,6 +23,8 @@ class AppRouter {
   static const String videoCall = '/video-call';
   // contacts
   static const String contacts = '/contacts';
+  // notification
+  static const String notifications = '/notifications';
 
   static Route<dynamic> onGenerateRoute(RouteSettings route) {
     switch (route.name) {
@@ -40,6 +43,8 @@ class AppRouter {
       case contacts:
         return MaterialPageRoute(
             builder: (_) => ContactScreen(tabIndex: route.arguments as int));
+      case notifications:
+        return MaterialPageRoute(builder: (_) => const NotificationScreen());
       case videoCall:
         return MaterialPageRoute(builder: (_) => const GetUserMediaSample());
       default:

@@ -64,8 +64,8 @@ class Socket {
 
         AppNotify.showNotification(
           title: data['Title'],
-          body: data['Message'],
-          icon: '${ApiConfig.BASE_IMAGE_URL}${data['Avatar']}',
+          body: data['Content'],
+          icon: '${ApiConfig.BASE_IMAGE_URL}${data['ThumbnailUrl']}',
         );
       });
     } catch (e) {

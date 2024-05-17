@@ -4,12 +4,14 @@ class CustomMarkerWidget extends StatelessWidget {
   final String imageUrl;
   final String title;
   final Color? colorPin;
+  final bool isVictim;
 
   const CustomMarkerWidget({
     super.key,
     required this.imageUrl,
     required this.title,
     this.colorPin = Colors.blueAccent,
+    this.isVictim = false,
   });
 
   @override
@@ -21,7 +23,7 @@ class CustomMarkerWidget extends StatelessWidget {
           'assets/images/marker.png',
           width: 45,
           height: 45,
-          color: colorPin,
+          color: isVictim ? Colors.red : colorPin,
         ),
         Positioned(
           top: 12,

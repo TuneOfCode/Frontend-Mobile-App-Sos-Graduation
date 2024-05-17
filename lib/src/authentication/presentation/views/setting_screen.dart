@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sos_app/core/components/views/alert_dialog.dart';
 import 'package:sos_app/core/constants/api_config_constant.dart';
@@ -72,7 +73,7 @@ class _SettingScreenState extends State<SettingScreen> {
               ),
             ),
           ),
-          content: Text(''),
+          content: Text('Ứng dụng cứu hộ phiên bản v1.0.0'),
         );
       },
     );
@@ -91,7 +92,10 @@ class _SettingScreenState extends State<SettingScreen> {
               ),
             ),
           ),
-          content: Text(''),
+          content: Text(
+            '1.Điều khoản: ...\n2.Chính sách: ...',
+            textAlign: TextAlign.center,
+          ),
         );
       },
     );
@@ -101,8 +105,8 @@ class _SettingScreenState extends State<SettingScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialogBase(
-          title: const Center(
+        return const AlertDialogBase(
+          title: Center(
             child: Text(
               'Báo lỗi ứng dụng',
               style: TextStyle(
@@ -110,26 +114,144 @@ class _SettingScreenState extends State<SettingScreen> {
               ),
             ),
           ),
-          content: const Text('Bạn có chắc chắn báo lỗi ứng dụng?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Từ chối'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+          content: Text(
+            'Tính năng sắp ra mắt!',
+            textAlign: TextAlign.center,
+          ),
+          // content: const Text('Bạn có chắc chắn báo lỗi ứng dụng?'),
+          // actions: [
+          //   TextButton(
+          //     onPressed: () {
+          //       Navigator.of(context).pop();
+          //     },
+          //     child: const Text('Từ chối'),
+          //   ),
+          //   TextButton(
+          //     onPressed: () {
+          //       Navigator.of(context).pop();
+          //     },
+          //     child: Text(
+          //       'Đồng ý',
+          //       style: TextStyle(
+          //         color: Colors.green[800],
+          //       ),
+          //     ),
+          //   ),
+          // ],
+        );
+      },
+    );
+  }
+
+  _handleInfoWarningAmber(context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const AlertDialogBase(
+            title: Center(
               child: Text(
-                'Đồng ý',
+                'Thông tin cứu hộ',
                 style: TextStyle(
-                  color: Colors.green[800],
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-          ],
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ListTile(
+                    leading: Text(
+                      '113',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.red,
+                      ),
+                    ),
+                    title: Text(
+                      'Công an',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.red,
+                      ),
+                    ),
+                    trailing: Icon(
+                      Icons.security_outlined,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  ListTile(
+                    leading: Text(
+                      '114',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.red,
+                      ),
+                    ),
+                    title: Text(
+                      'Cứu hoả',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.red,
+                      ),
+                    ),
+                    trailing: Icon(
+                      Icons.fire_truck_rounded,
+                      color: Colors.orange,
+                    ),
+                  ),
+                  ListTile(
+                    leading: Text(
+                      '115',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.red,
+                      ),
+                    ),
+                    title: Text(
+                      'Cứu thương',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.red,
+                      ),
+                    ),
+                    trailing: Icon(
+                      Icons.medication_outlined,
+                      color: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+            ));
+      },
+    );
+  }
+
+  _handleFeedback(context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const AlertDialogBase(
+          title: Center(
+            child: Text(
+              'Phản hồi',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          content: Text(
+            'Tính năng sắp ra mắt!',
+            textAlign: TextAlign.center,
+          ),
         );
       },
     );
@@ -192,11 +314,11 @@ class _SettingScreenState extends State<SettingScreen> {
                   trailing: const Icon(Icons.arrow_forward_ios),
                 ),
                 const SizedBox(
-                  height: 10,
+                  height: 5,
                 ),
                 const Divider(),
                 const SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 ListTile(
                   onTap: () => _handleChangePassword(context),
@@ -216,7 +338,7 @@ class _SettingScreenState extends State<SettingScreen> {
                 ),
                 const Divider(),
                 const SizedBox(
-                  height: 10,
+                  height: 5,
                 ),
                 ListTile(
                   onTap: () => _handleContact(context),
@@ -233,7 +355,7 @@ class _SettingScreenState extends State<SettingScreen> {
                 ),
                 const Divider(),
                 const SizedBox(
-                  height: 10,
+                  height: 5,
                 ),
                 ListTile(
                   onTap: () => _handleInfoApp(context),
@@ -249,7 +371,7 @@ class _SettingScreenState extends State<SettingScreen> {
                 ),
                 const Divider(),
                 const SizedBox(
-                  height: 10,
+                  height: 5,
                 ),
                 ListTile(
                   onTap: () => _handlePolicy(context),
@@ -265,7 +387,23 @@ class _SettingScreenState extends State<SettingScreen> {
                 ),
                 const Divider(),
                 const SizedBox(
-                  height: 10,
+                  height: 5,
+                ),
+                ListTile(
+                  onTap: () => _handleInfoWarningAmber(context),
+                  leading: Icon(
+                    Icons.warning_amber_rounded,
+                    size: 25,
+                    color: Colors.red[800],
+                  ),
+                  title: const Text(
+                    'Thông tin cứu hộ',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const Divider(),
+                const SizedBox(
+                  height: 5,
                 ),
                 ListTile(
                   onTap: () => _handleBugReport(context),
@@ -276,6 +414,25 @@ class _SettingScreenState extends State<SettingScreen> {
                   ),
                   title: const Text(
                     'Báo lỗi',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(
+                  height: 5,
+                ),
+                const Divider(),
+                const SizedBox(
+                  height: 10,
+                ),
+                ListTile(
+                  onTap: () => _handleFeedback(context),
+                  leading: Icon(
+                    Icons.feedback_outlined,
+                    size: 25,
+                    color: Colors.purple[600],
+                  ),
+                  title: const Text(
+                    'Phản hồi',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),

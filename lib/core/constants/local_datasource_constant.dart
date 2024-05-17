@@ -9,4 +9,9 @@ class LocalDataSource {
   static const FRIENDSHIPS = "friendships";
   static const CURRENT_LATITUDE = "current_latitude";
   static const CURRENT_LONGITUDE = "current_longitude";
+  static const IS_VICTIM = "is_victim";
+  static const DATETIME_SOS = "datetime_sos";
+  static const IS_TRACKING = "is_tracking";
+  static const IS_SHOW_SAFE = "is_show_safe";
+  static const NOTIFICATIONS = "notifications";
 }

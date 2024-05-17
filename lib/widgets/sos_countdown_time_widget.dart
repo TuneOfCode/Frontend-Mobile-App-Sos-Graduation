@@ -1,6 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:sos_app/core/components/views/alert_dialog.dart';
+import 'package:sos_app/core/constants/local_datasource_constant.dart';
+import 'package:sos_app/core/constants/logger_constant.dart';
 import 'package:sos_app/core/router/app_router.dart';
 
 class SosCountdownTimeWidget extends StatefulWidget {
@@ -11,7 +15,7 @@ class SosCountdownTimeWidget extends StatefulWidget {
 }
 
 class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
-  static int maxSeconds = 10;
+  static int maxSeconds = 5;
   late int seconds;
   static int maxSos = 0;
   late int sosCounter;
@@ -19,6 +23,7 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
   Timer? timer;
   static DateTime? blockSpam;
   static DateTime? unblockSpam;
+  final box = GetStorage();
 
   @override
   void initState() {
@@ -28,17 +33,79 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
     startTimer();
   }
 
+  void checkEnableSos() {
+    final isVictim = box.read(LocalDataSource.IS_VICTIM);
+    if (isVictim != null && isVictim) {
+      if (mounted) {
+        timer?.cancel();
+      }
+
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return AlertDialogBase(
+            title: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.redAccent,
+                  size: 30,
+                ),
+                Text(
+                  'Thông báo',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red[600],
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              'Bạn đã phát tín hiệu trước đó!',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.red[600],
+              ),
+              textAlign: TextAlign.justify,
+            ),
+          );
+        },
+      );
+
+      Future.delayed(const Duration(seconds: 3), () {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          AppRouter.home,
+          ModalRoute.withName(''),
+        );
+      });
+    }
+    return;
+  }
+
   void startTimer() {
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (seconds > 0) {
+        checkEnableSos();
         setState(() {
           seconds--;
         });
       } else {
-        timer.cancel();
-        Future.delayed(const Duration(seconds: 3), () {
-          Navigator.of(context).pop();
-        });
+        logger.f('Phát tín hiệu SOS');
+        box.write(LocalDataSource.IS_VICTIM, true);
+        box.write(LocalDataSource.DATETIME_SOS,
+            DateTime.now().add(const Duration(seconds: 30)).toString());
+        if (mounted) {
+          timer.cancel();
+        }
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          AppRouter.home,
+          ModalRoute.withName(''),
+        );
       }
     });
   }
@@ -132,7 +199,9 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
       // );
       Navigator.of(context)
           .pushNamedAndRemoveUntil(AppRouter.home, (route) => false);
-      timer!.cancel();
+      if (mounted) {
+        timer!.cancel();
+      }
       return;
     }
   }
@@ -140,7 +209,9 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
   @override
   void dispose() {
     super.dispose();
-    timer!.cancel();
+    if (mounted) {
+      timer!.cancel();
+    }
   }
 
   @override
@@ -150,7 +221,7 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        automaticallyImplyLeading: seconds == 0,
+        automaticallyImplyLeading: false,
       ),
       body: SizedBox(
         width: double.infinity,

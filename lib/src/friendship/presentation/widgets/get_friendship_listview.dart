@@ -3,7 +3,6 @@ import 'package:sos_app/core/constants/api_config_constant.dart';
 import 'package:sos_app/core/constants/logger_constant.dart';
 import 'package:sos_app/core/services/injection_container_service.dart';
 import 'package:sos_app/core/sockets/webrtc.dart';
-import 'package:sos_app/src/authentication/presentation/widgets/loading_column.dart';
 import 'package:sos_app/src/friendship/data/datasources/local/friendship_local_datasource.dart';
 import 'package:sos_app/src/friendship/data/models/call_info_model.dart';
 import 'package:sos_app/src/friendship/domain/entities/friendship.dart';
@@ -27,13 +26,10 @@ class _GetFriendshipListViewState extends State<GetFriendshipListView> {
 
   CallInfoModel callInfoModel = CallInfoModel(isCaller: false);
 
-  bool isLoading = true;
-
   Future<void> getLocalFriendships() async {
     final friendships = await sl<FriendshipLocalDataSource>().getFriendships();
     setState(() {
       this.friendships = friendships;
-      isLoading = false;
     });
   }
 
@@ -50,22 +46,20 @@ class _GetFriendshipListViewState extends State<GetFriendshipListView> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const LoadingColumn(message: 'Đang tải danh sách bạn bè');
-    }
-
-    if (friendships.isEmpty) {
-      return const Center(
-        child: Text(
-          'Danh sách bạn bè trống',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            overflow: TextOverflow.ellipsis,
+    Future.delayed(const Duration(seconds: 3), () {
+      if (friendships.isEmpty) {
+        return const Center(
+          child: Text(
+            'Danh sách bạn bè trống',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ),
-      );
-    }
+        );
+      }
+    });
 
     return SafeArea(
       child: SizedBox(
@@ -113,7 +107,7 @@ class _GetFriendshipListViewState extends State<GetFriendshipListView> {
                               receiverAvatar:
                                   "${ApiConfig.BASE_IMAGE_URL}${friendship.friendAvatar}",
                             ),
-                            true,
+                            false,
                           );
                         },
                         icon: const Icon(Icons.phone),

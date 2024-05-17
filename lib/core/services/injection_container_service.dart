@@ -46,6 +46,14 @@ import 'package:sos_app/src/friendship/domain/usecases/reject_friendship_request
 import 'package:sos_app/src/friendship/domain/usecases/remove_friendship.dart';
 import 'package:sos_app/src/friendship/presentation/logic/friendship_bloc.dart';
 import 'package:sos_app/src/friendship/presentation/logic/friendship_request_bloc.dart';
+import 'package:sos_app/src/notifications/data/datasources/local/notification_local_datasource.dart';
+import 'package:sos_app/src/notifications/data/datasources/local/notification_local_datasource_impl.dart';
+import 'package:sos_app/src/notifications/data/datasources/remote/notification_remote_datasource.dart';
+import 'package:sos_app/src/notifications/data/datasources/remote/notification_remote_datasource_impl.dart';
+import 'package:sos_app/src/notifications/data/repositories/notification_repository_impl.dart';
+import 'package:sos_app/src/notifications/domain/respositories/notification_repository.dart';
+import 'package:sos_app/src/notifications/domain/usecases/get_notifications_by_user.dart';
+import 'package:sos_app/src/notifications/presentation/logic/notification_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -148,6 +156,28 @@ Future<void> dependencyInjection() async {
         () => FriendshipRemoteDataSourceImpl(sl(), sl(), sl()))
     ..registerLazySingleton<FriendshipLocalDataSource>(
         () => FriendshipLocalDataSourceImpl())
+
+    ///***********************************************///
+
+    ///***********************************************
+    // !Notification Dependencies
+    // App logic
+    ..registerFactory(() => NotificationBloc(
+          getNotificationsByUser: sl(),
+        ))
+
+    // Use cases
+    ..registerLazySingleton(() => GetNotificationsByUser(sl()))
+
+    // Repositories
+    ..registerLazySingleton<NotificationRepository>(
+        () => NotificationRepositoryImpl(sl(), sl(), sl()))
+
+    // Data sources
+    ..registerLazySingleton<NotificationRemoteDataSource>(
+        () => NotificationRemoteDataSourceImpl(sl(), sl()))
+    ..registerLazySingleton<NotificationLocalDataSource>(
+        () => NotificationLocalDataSourceImpl())
 
     ///***********************************************///
 

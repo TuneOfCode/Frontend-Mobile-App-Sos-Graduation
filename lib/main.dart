@@ -7,6 +7,7 @@ import 'package:sos_app/src/authentication/data/datasources/local/authentication
 import 'package:sos_app/src/authentication/presentation/logic/authentication_bloc.dart';
 import 'package:sos_app/src/friendship/presentation/logic/friendship_bloc.dart';
 import 'package:sos_app/src/friendship/presentation/logic/friendship_request_bloc.dart';
+import 'package:sos_app/src/notifications/presentation/logic/notification_bloc.dart';
 
 String? accessToken = '';
 
@@ -41,6 +42,9 @@ class SosApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => sl<FriendshipBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => sl<NotificationBloc>(),
         ),
       ],
       child: MaterialApp(
