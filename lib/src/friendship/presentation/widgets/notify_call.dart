@@ -152,15 +152,6 @@ class _NotifyCallState extends State<NotifyCall> {
 
   @override
   Widget build(BuildContext context) {
-    // if (hasIncomingCall) {
-    //   return Positioned.fill(
-    //     child: IncomingCall(
-    //       callInfoModel: callInfoModel,
-    //       acceptCall: _acceptCall,
-    //       denyCall: _denyCall,
-    //     ),
-    //   );
-    // }
     if (hasIncomingCall) {
       Future.delayed(Duration.zero, () {
         showDialog(

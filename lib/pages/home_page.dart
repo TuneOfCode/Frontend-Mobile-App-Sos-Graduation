@@ -161,6 +161,9 @@ class _HomePageState extends State<HomePage> {
             Placemark place = placeMarks[0];
             currentAddress =
                 '${place.street}, ${place.subAdministrativeArea}, ${place.country}';
+
+            logger.f('currentLocation: $currentLocation');
+            logger.f('currentAddress: $currentAddress');
           }
 
           setState(() {

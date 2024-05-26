@@ -36,7 +36,7 @@ class _CallScreenState extends State<CallScreen> {
   final List<RTCIceCandidate> _iceCandidates = [];
 
   bool isAudioOn = true;
-  late bool isVideoOn = widget.isCallVideo;
+  late bool isVideoOn = true; // widget.isCallVideo;
   bool isFrontCameraActive = true;
 
   // bool isAcceptedReceiver = false;

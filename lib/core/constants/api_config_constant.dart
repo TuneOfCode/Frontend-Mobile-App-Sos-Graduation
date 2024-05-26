@@ -2,11 +2,8 @@
 
 class ApiConfig {
   const ApiConfig._();
-  static const HOST = '192.168.1.2';
-  // kIsWeb
-  //     ? 'localhost'
-  //     : '192.168.1.7'; // web: localhost, emulator android: 10.0.2.2
-  static const PORT = "6868"; // https: 7162, http: 5032
+  static const HOST = '192.168.1.12';
+  static const PORT = "8080";
   static const BASE_URL = "http://$HOST:$PORT/api";
   static const BASE_SOCKET_URL = "http://$HOST:$PORT";
   static const BASE_IMAGE_URL = "http://$HOST:$PORT";

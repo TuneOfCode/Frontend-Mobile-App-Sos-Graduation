@@ -1,8 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:sos_app/core/components/views/alert_dialog.dart';
+import 'package:sos_app/core/constants/api_config_constant.dart';
 import 'package:sos_app/core/constants/local_datasource_constant.dart';
 import 'package:sos_app/core/constants/logger_constant.dart';
 import 'package:sos_app/core/router/app_router.dart';
@@ -24,10 +28,20 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
   static DateTime? blockSpam;
   static DateTime? unblockSpam;
   final box = GetStorage();
+  AudioPlayer player = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
+
+    player = AudioPlayer();
+    player.setReleaseMode(ReleaseMode.stop);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await player.setSource(UrlSource(
+          '${ApiConfig.BASE_IMAGE_URL}/medias/bell-countdown-5s.mp3'));
+      await player.resume();
+    });
+
     seconds = maxSeconds;
     sosCounter = maxSos;
     startTimer();
@@ -88,7 +102,7 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
   }
 
   void startTimer() {
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (seconds > 0) {
         checkEnableSos();
         setState(() {
@@ -102,6 +116,8 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
         if (mounted) {
           timer.cancel();
         }
+        await player.stop();
+        player.dispose();
         Navigator.of(context).pushNamedAndRemoveUntil(
           AppRouter.home,
           ModalRoute.withName(''),
@@ -192,11 +208,6 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
     }
 
     if (isExist) {
-      // Navigator.of(context).push(
-      //   MaterialPageRoute(
-      //     builder: (context) => const HomePage(),
-      //   ),
-      // );
       Navigator.of(context)
           .pushNamedAndRemoveUntil(AppRouter.home, (route) => false);
       if (mounted) {
@@ -212,6 +223,7 @@ class _SosCountdownTimeWidgetState extends State<SosCountdownTimeWidget> {
     if (mounted) {
       timer!.cancel();
     }
+    player.dispose();
   }
 
   @override

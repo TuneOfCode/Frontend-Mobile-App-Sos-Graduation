@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,9 @@ class _MapWidgetState extends State<MapWidget> {
   List<Marker> markers = [];
   final box = GetStorage();
   final _cacheStore = MemCacheStore();
+  AudioPlayer player = AudioPlayer();
+  final UrlSource bellSosWarning =
+      UrlSource('${ApiConfig.BASE_IMAGE_URL}/medias/bell-sos-warning.mp3');
 
   Future<void> getCurrentUser() async {
     await Future.delayed(Duration.zero, () async {
@@ -101,13 +105,6 @@ class _MapWidgetState extends State<MapWidget> {
 
     if (accessToken != null) {
       if (Socket.instance.hubConnection != null) {
-        // Socket.instance.hubConnection!.on("ReceiveNotification",
-        //     (arguments) async {
-        //   // await GetStorage().remove(LocalDataSource.FRIENDSHIPS);
-        //   context.read<FriendshipBloc>().add(const GetFriendshipsEvent(
-        //       params: GetFriendshipParams(userId: '', page: 1)));
-        // });
-
         Socket.instance.hubConnection!.on("ReceiveLocation", (arguments) async {
           logger.d('Receive location in map widget: $arguments');
           final data = jsonDecode(arguments![0].toString());
@@ -135,7 +132,7 @@ class _MapWidgetState extends State<MapWidget> {
             });
           }
 
-          if (friendships != null && friendships.isNotEmpty) {
+          if (mounted && friendships != null && friendships.isNotEmpty) {
             for (var friendship in friendships) {
               if (friendship.friendId == data['friendId'].toString()) {
                 setState(() {
@@ -188,7 +185,7 @@ class _MapWidgetState extends State<MapWidget> {
             });
           }
 
-          if (friendships != null && friendships.isNotEmpty) {
+          if (mounted && friendships != null && friendships.isNotEmpty) {
             for (var friendship in friendships) {
               if (data != null &&
                   friendship.friendId == data['victimId'].toString()) {
@@ -212,16 +209,18 @@ class _MapWidgetState extends State<MapWidget> {
                 20);
             box.write(LocalDataSource.IS_TRACKING, true);
           }
+          await player.resume();
         });
 
-        Socket.instance.hubConnection!.on("ReceiveSafeFromVictim", (arguments) {
+        Socket.instance.hubConnection!.on("ReceiveSafeFromVictim",
+            (arguments) async {
           box.remove(LocalDataSource.IS_VICTIM);
           box.remove(LocalDataSource.DATETIME_SOS);
           box.remove(LocalDataSource.IS_TRACKING);
 
           final victimId = arguments![0].toString();
           logger.d('Receive safe from victim in map widget: $victimId');
-          if (friendships != null && friendships.isNotEmpty) {
+          if (mounted && friendships != null && friendships.isNotEmpty) {
             for (var friendship in friendships) {
               if (victimId != null && friendship.friendId == victimId) {
                 setState(() {
@@ -230,6 +229,9 @@ class _MapWidgetState extends State<MapWidget> {
               }
             }
           }
+
+          await player.stop();
+          player.dispose();
         });
       }
     }
@@ -239,17 +241,18 @@ class _MapWidgetState extends State<MapWidget> {
   void initState() {
     getCurrentUser();
     getNotifyHub();
+    player = AudioPlayer();
+    player.setReleaseMode(ReleaseMode.stop);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await player.setSource(bellSosWarning);
+    });
     super.initState();
   }
 
   @override
   void dispose() {
-    // if (Socket.instance.hubConnection != null) {
-    //   Socket.instance.hubConnection!.off("ReceiveNotification");
-    //   Socket.instance.hubConnection!.off("ReceiveLocation");
-    //   Socket.instance.hubConnection!.off("TrackLocation");
-    // }
     super.dispose();
+    player.dispose();
   }
 
   @override
