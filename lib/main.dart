@@ -18,12 +18,6 @@ void main() async {
   accessToken = await sl<AuthenticationLocalDataSource>().getAccessToken();
   logger.f('accessToken: $accessToken');
 
-  // if (accessToken != null) {
-  //   WebRTCsHub.instance.init(accessToken!);
-  // }
-
-  // var currentUser = await sl<AuthenticationLocalStorage>().getCurrentUser();
-  // logger.f('currentUser: $currentUser');
   runApp(const SosApp());
 }
 

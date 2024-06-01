@@ -19,6 +19,7 @@ import 'package:sos_app/core/constants/api_config_constant.dart';
 import 'package:sos_app/core/constants/local_datasource_constant.dart';
 import 'package:sos_app/core/constants/logger_constant.dart';
 import 'package:sos_app/core/services/injection_container_service.dart';
+import 'package:sos_app/core/services/provide_service.dart';
 import 'package:sos_app/core/sockets/socket.dart';
 import 'package:sos_app/src/authentication/data/datasources/local/authentication_local_datasource.dart';
 import 'package:sos_app/src/authentication/data/models/user_model.dart';
@@ -48,6 +49,8 @@ class _MapWidgetState extends State<MapWidget> {
   UserModel currentUser = UserModel.constructor();
   List<Friendship> friendships = [];
   List<Marker> markers = [];
+  List<LatLng> routepoints = [];
+  bool isShowRouter = false;
   final box = GetStorage();
   final _cacheStore = MemCacheStore();
   AudioPlayer player = AudioPlayer();
@@ -146,12 +149,13 @@ class _MapWidgetState extends State<MapWidget> {
 
           final isTracking = box.read(LocalDataSource.IS_TRACKING);
           if (mounted && isTracking == null) {
-            widget.mapController.move(
-                LatLng(
-                  latitude,
-                  longitude,
-                ),
-                20);
+            // widget.mapController.move(
+            //     LatLng(
+            //       latitude,
+            //       longitude,
+            //     ),
+            //     20);
+
             box.write(LocalDataSource.IS_TRACKING, true);
           }
         });
@@ -161,6 +165,7 @@ class _MapWidgetState extends State<MapWidget> {
           final data = jsonDecode(arguments![0].toString());
           final latitude = double.parse(data['latitude'].toString());
           final longitude = double.parse(data['longitude'].toString());
+          final isTracking = box.read(LocalDataSource.IS_TRACKING);
 
           String currentAddress = '';
           if (!kIsWeb) {
@@ -189,17 +194,29 @@ class _MapWidgetState extends State<MapWidget> {
             for (var friendship in friendships) {
               if (data != null &&
                   friendship.friendId == data['victimId'].toString()) {
+                var routePointersData = await ProvideService.getRouterMap(
+                  currentUser.latitude,
+                  currentUser.longitude,
+                  latitude,
+                  longitude,
+                );
                 setState(() {
                   friendship.friendLatitude = latitude;
                   friendship.friendLongitude = longitude;
                   friendship.isVictim = true;
                   friendship.friendshipAddress = currentAddress;
+                  routepoints = routePointersData;
+                  isShowRouter = true;
                 });
+
+                if (isTracking != null && isTracking) {
+                  await player.stop();
+                  player.dispose();
+                }
               }
             }
           }
 
-          final isTracking = box.read(LocalDataSource.IS_TRACKING);
           if (mounted && isTracking == null) {
             widget.mapController.move(
                 LatLng(
@@ -225,6 +242,8 @@ class _MapWidgetState extends State<MapWidget> {
               if (victimId != null && friendship.friendId == victimId) {
                 setState(() {
                   friendship.isVictim = false;
+                  routepoints = [];
+                  isShowRouter = false;
                 });
               }
             }
@@ -297,6 +316,15 @@ class _MapWidgetState extends State<MapWidget> {
             tileProvider: CachedTileProvider(
               maxStale: const Duration(days: 30),
               store: _cacheStore,
+            ),
+          ),
+          Visibility(
+            visible: isShowRouter,
+            child: PolylineLayer(
+              polylineCulling: false,
+              polylines: [
+                Polyline(points: routepoints, color: Colors.red, strokeWidth: 8)
+              ],
             ),
           ),
           MarkerLayer(

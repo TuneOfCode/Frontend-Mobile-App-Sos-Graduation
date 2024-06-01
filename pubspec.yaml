@@ -38,6 +38,7 @@ dependencies:
   # Utils
   bloc: ^8.1.0
   flutter_bloc: ^8.1.1
+  location: ^6.0.2
   flutter_map: ^6.1.0
   flutter_map_cancellable_tile_provider: ^2.0.0
   flutter_map_cache: ^1.5.0
@@ -56,6 +57,8 @@ dependencies:
   audioplayers: ^6.0.0
   flutter_background_service: ^5.0.5
   background_location_tracker: ^1.4.3
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
 
   #Storage
   flutter_secure_storage: ^9.0.0
@@ -80,12 +83,42 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+# The "flutter_lints" package below contains a set of recommended lints to
+# encourage good coding practices. The lint set provided by the package is
+# activated in the `analysis_options.yaml` file located at the root of your
+# package. See that file for information about deactivating specific lint
+# rules and activating additional ones.
+flutter_lints: ^2.0.0
+
+# add icon and splash
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/sos.ico"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/icons/sos.ico"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "assets/icons/sos.ico"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/icons/sos.ico"
+
+flutter_native_splash:
+  color: "#e1f5fe"
+  image: assets/icons/logo_lockup_flutter_vertical.png
+
+  android_12:
+    image: assets/icons/sos.png
+
+  android: true
+  ios: true
+  web: false
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

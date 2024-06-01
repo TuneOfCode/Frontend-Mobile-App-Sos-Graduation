@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sos_app/core/components/views/alert_dialog.dart';
 import 'package:sos_app/core/constants/api_config_constant.dart';

@@ -2,15 +2,18 @@
 
 class ApiConfig {
   const ApiConfig._();
-  static const HOST = '192.168.1.12';
-  static const PORT = "8080";
-  static const BASE_URL = "http://$HOST:$PORT/api";
-  static const BASE_SOCKET_URL = "http://$HOST:$PORT";
-  static const BASE_IMAGE_URL = "http://$HOST:$PORT";
+  static const HOST = '192.168.1.8';
+  static const PORT = "6868";
 
-  // // use ngrok host
-  // static const BASE_URL = "https://correct-pegasus-rich.ngrok-free.app/api";
-  // static const BASE_IMAGE_URL = "https://correct-pegasus-rich.ngrok-free.app";
+  // // use localhost
+  // static const BASE_URL = "http://$HOST:$PORT/api";
+  // static const BASE_SOCKET_URL = "http://$HOST:$PORT";
+  // static const BASE_IMAGE_URL = "http://$HOST:$PORT";
+
+  // use ngrok host
+  static const BASE_URL = "https://correct-pegasus-rich.ngrok-free.app/api";
+  static const BASE_SOCKET_URL = "https://correct-pegasus-rich.ngrok-free.app";
+  static const BASE_IMAGE_URL = "https://correct-pegasus-rich.ngrok-free.app";
 }
 
 class AuthenticationEndpoint {

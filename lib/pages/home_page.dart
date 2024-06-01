@@ -37,6 +37,7 @@ import 'package:sos_app/src/notifications/presentation/logic/notification_bloc.d
 import 'package:sos_app/src/notifications/presentation/logic/notification_event.dart';
 import 'package:sos_app/widgets/map_widget.dart';
 import 'package:sos_app/widgets/sos_phone_widget.dart';
+import 'package:location/location.dart' as loc;
 import 'package:geocoding/geocoding.dart';
 
 class HomePage extends StatefulWidget {
@@ -110,11 +111,13 @@ class _HomePageState extends State<HomePage> {
   Future<Position?> getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
+    loc.Location locationR = loc.Location();
 
     try {
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
       if (!serviceEnabled) {
+        locationR.requestService();
         ScaffoldMessenger.of(context).showSnackBar(
             const ToastError(message: 'Dịch vụ vị trí không được bật!')
                 .build(context));
@@ -144,6 +147,8 @@ class _HomePageState extends State<HomePage> {
           desiredAccuracy: LocationAccuracy.high,
           forceAndroidLocationManager: true,
         );
+
+        locationR.enableBackgroundMode(enable: true);
 
         if (currentUser.userId.isNotEmpty) {
           await box.write(
